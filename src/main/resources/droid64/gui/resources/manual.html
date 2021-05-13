@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DroiD64 v${project.version} User Manual</title>
+<style type="text/css">
+ body{font-size: 12pt;}
+ dt {font-weight: bold;}
+ dd {margin-bottom:10px;}
+ table {margin-left:10px;border-spacing:0px;border-collapse:collapse;}
+ th {text-align:left;font-weight:bold;padding-right:10px;padding-bottom:0px;padding-top:0px;}
+ td {padding-right:10px;padding-bottom:0px;padding-top:0px;}
+ a {text-decoration:none;}
+ a:hover {text-decoration:underline;} 
+</style>
+</head>
+<body>
+<h1><a href="http://droid64.sourceforge.net/" style="color:#000000;">DroiD64 v${project.version}</a> User Manual</h1>
+
+<h2>Contents</h2>
+<ol>
+  <li>Introduction</li>
+  <li>Disk image formats</li>
+  <li>Plugins</li>
+  <li>Operations</li>
+  <li>Database</li>
+  <li>DroiD64 settings</li>
+  <li>Bookmarks</li>
+</ol>
+
+<hr/>
+<h2>1. Introduction</h2>
+<p>
+DroiD64 is an application used to work with disk images files from the Commodore 64, Commodore 128, Commodore VIC20, Commodore PET and various emulators of this family of computers.
+DroiD64 is written in Java to be portable to the various platforms supported by Java. Java 11 runtime or higher is required.</p>
+
+<p>This software works with disk images, and there might be technical deviations in the formats. 
+Sometimes on purpose by a developer of a certain software package and sometimes by rare Commodore hardware.
+Having said this, it is impossible to test and verify every possible variation of disk images in use, so DroiD64 could have bugs and might damage your files.
+Much efforts has been spent testing this software, but there could still be bugs left. Use DroiD64 with a little caution and keep a backup of your valuable files.
+There are no guarantees for anything when using this software. 
+However, I use it myself and I have managed pretty well so far. Don't hesitate contacting us if you find any bugs.</p>
+
+<p>The paths mentioned in this document are examples and may or may not match your computer. </p>
+
+<h3>1.1 DroiD64 command line</h3>
+<p>It is recommended, but not required, to increase the java heap size to decrease the risk of running low on java heap memory. 
+How to do this depends on your operating system and the way you start DroiD64.</p>
+<p>Example commandline for Linux, UNIX and similar operating systems with a MySQL database driver:</p>
+<pre style="display: inline-block; border:1px solid Black;padding: 4px;">
+  java -Xmx1024m -classpath /opt/lib/mysql-connector-java-5.1.47/mysql-connector-java-5.1.47-bin.jar:droid64-${project.version}.jar droid64.DroiD64
+</pre>
+<p>Example commandline for Microsoft Windows with a MySQL database driver:</p>
+<pre style="display: inline-block; border:1px solid Black;padding: 4px;">
+  java -Xmx1024m -classpath C:\mysql-connector-java-5.1.47\mysql-connector-java-5.1.47-bin.jar;droid64-${project.version}.jar droid64.DroiD64
+</pre>
+
+<hr/>
+<h2>2. Disk image formats</h2>
+<ul>
+<li> D64 (C1541) The standard C64 5.25 inch floppy disks, single sided with 160 kB on each side. It has 35 tracks with between 17 and 21 sectors.</li>
+<li> D67 (C2040) A format similar to D64, but this was used by the first Commodore disk drive and has DOS version 1. It has 35 tracks with between 17 and 21 sectors.</li>
+<li> D71 (C1571) The double sided D64 format used primarily on the Commodore 128. It is organized as 70 tracks with between 17 and 21 sectors.</li>
+<li> D80 (C8050) A 5.25 inch format, single sided with 520 kB on each side. It has 77 tracks with between 23 and 29 sectors.</li>
+<li> D81 (C1581) A 3.5 inch format, double sided with 800kB in total. It has 80 tracks with 40 sectors.</li>
+<li> D82 (C8250) The double sided D80, with a total of 1040 kB. It is organized as 154 tracks with between 23 and 29 sectors.</li>
+<li> D88 (C8280) A 8 inch double sided format with 1001 kB in total. It has 77 tracks with 26 sectors on each side.</li>
+<li> T64 (C1530) The tape format used in several emulators.</li>
+<li> LNX The LiNX disk archive format. </li>
+<li> Zip Supported to allow you to browse contents of image files. When running plugins, the chosen image is extracted into the temp folder and is deleted after use.</li>
+<li> CP/M formatted D64, D71 and D81 images can be read. No write support at the moment, but it is on the to do list. </li>
+</ul>
+
+<hr/>
+<h2>3. Plugins</h2>
+<p>Plugins in DroiD64 are used to call external programs on your computer.
+This can be any kind of program, e.g. OpenCBM utilities to read/write images to and from real Commodore disk drives or the VICE emulator.</p>
+<p>A plugin definition consist of several configurable fields. 
+The <b>label</b> which is the text on the button. 
+The <b>command</b> which is the program which will be executed.
+The <b>arguments</b> which are command line arguments forwarded to your command.
+The <b>description</b> which is the tooltip explaining what the plugin does.
+The <b>fork new thread</b> checkbox, which when checked will make the plugin to execute in the background. Otherwise, DroiD64 will be blocked waiting for the plugin to terminate.
+</p>
+
+<p>These are keywords which may be used in the arguments:</p>
+<ul>
+ <li><i>{Image}</i> - The filename of the disk image. E.g. "<i>/some/where/image.d64</i>".</li>
+ <li><i>{Files}</i> - The names of the selected files. E.g. "<i>file1 file2 file3</i>"</li>
+ <li><i>{ImageFiles}</i> - Similar to <i>{Files}</i> but each file is prefixed by the <i>image</i>: E.g. "<i>/some/where/image.d64:file1 /some/where/image.d64:file2</i>". When used with VICE it will autostart the selected file.</li>
+ <li><i>{Target}</i> - The path of the the other disk pane.</li>
+ <li><i>{NewFile}</i> - Opens a file dialog asking for a name for a new disk image.</li>
+ <li><i>{ImageType}</i> - Type of image (D64, D67, D71, D80, D81 D82, D88, T64, LNX).</li>
+ <li><i>{DriveType}</i> - Type of drive used for the image (1541, 1571, 1581, 4250, 8250, 8280).</li>
+ <li><i>{ExtArguments}</i> - Extra arguments which are configured on bookmarks. This can be used to customize a plugin for a certain bookmark.</li>
+</ul>
+
+<p><b>Example:</b></p>
+Starting the VICE C64 emulator with disk image disk image mounted and autostart the selected file.
+  <table border="1">
+    <tr><th>Label:</th><td>VICE 64</td>
+    <tr><th>Command:</th><td>x64</td>
+    <tr><th>Arguments:</th><td>-drive8type {DriveType} {ImageFiles}</td>
+    <tr><th>Description:</th><td>Invoke VICE 64 emulator</td>
+    <tr><th>Fork new thread:</th><td>[X]</td>
+  </table>
+<br>
+<hr/>
+<h2>4. Operations</h2>
+
+<h3>4.1. Disk image operations</h3>
+<dl>
+ <dt>Load Disk</dt>
+ <dd>Opens a file dialog for selecting a disk image to be loaded into active panel.</dd>
+ <dt>Unload/Parent</dt>
+ <dd>Unload a mounted disk image, or change to parent folder.</dd>
+ <dt>New Disk</dt>
+ <dd>Opens a dialog for creating a new blank disk image.</dd>
+ <dt>Mirror</dt>
+ <dd>Opens the same folder/image as in the inactive file panel.</dd>
+ <dt>BAM</dt>
+ <dd>Open block allocation map. When double clicking a sector when in <i>view</i> mode, a hexdump of the sector will be shown.
+ The hex viewer has navigation fields at the top to allow you choose which track and sector to view.
+ If you select one byte in the table which is a valid track number and if the selected byte is directly followed by a value which is a valid sector number, then a button with the track/sector is enabled. Pressing this button jump to that block.
+ This is a convenient way to analyze a disk image.
+ When in <i>edit</i> mode you can toggle a sector between allocated and free.
+ </dd>
+ <dt>Validate Disk</dt>
+ <dd>
+   <p>The validation feature of DroiD64 will scan the opened disk image for problems. Problems like:</p>
+   <ul>
+     <li>Sectors which are allocated, but not used by any file.</li>
+     <li>Sectors which are free, but used by a file.</li>
+     <li>Cyclic sector references on directory track.</li>
+     <li>Cyclic sector references within a file.</li>
+     <li>A sector being referred to by more than one file.</li>
+     <li>The free sector counter in the BAM doesn't match the sectors used by files.</li>
+   </ul>
+   <p>DroiD64 is able to correct these problems, <b>but</b> on some disks these deviations are on purpose and required by the program(s) on the disk.
+   Some games, megademos and other copy protected software depend on these errors to work. When in doubt, make backups or leave the validation errors.</p>
+ </dd>
+ <dt>Rename Disk</dt>
+ <dd>Opens a rename dialog asking for a new name and disk ID for the mounted image.</dd>
+ <dt>Print Directory</dt>
+ <dd>Print the current file listing.</dd>
+ <dt>Open same as other</dt>
+ <dd>In the active file panel, open the same folder or image is in the inactive file panel.</dd>
+</dl>
+
+<h3>4.2. File operations</h3>
+<dl>
+ <dt>Copy File</dt>
+ <dd>Copy selected file(s). If copying a CBM (partition) file, its contents is simply copied as one large data file. The BAM, directory blocks and track/sector pointers are not recreated when a partition is copied to another D81 disk image. When copying files to a disk image, file name extensions in the "extension removal" setting will be truncated.</dd>
+ <dt>New File</dt>
+ <dd>Opens a dialog for creating a new empty file.</dd> 
+ <dt>Delete File</dt>
+ <dd>Delete selected file(s).</dd>  
+ <dt>Rename File</dt>
+ <dd>Rename selected file(s).</dd>
+ <dt>MD5 checksum</dt>
+ <dd>Print the selected file(s) MD5 checksum on the console. Useful to compare files.</dd>
+ <dt>Makedir</dt>
+ <dd>
+   Create a directory in local file system.
+   The D81 disk images supports partitions (CBM files), and if a d81 image is mounted, a new partition can be created.
+ </dd>
+</dl>
+
+<h3>4.3. View operations</h3>
+<dl>
+ <dt>View Image</dt>
+ <dd>Open selected file(s) in the Koala paint viewer.</dd>
+ <dt>View Hex</dt>
+ <dd>
+ Open the selected file in a hexdump viewer. The hexdump viewer can also show MOS 6510 disassembled code of the file. Including the illegal opcodes.
+ </dd>
+ <dt>View Text</dt>
+ <dd>View the selected file as a text file.</dd>
+ <dt>View Basic</dt>
+ <dd>View the selected file as a BASIC listing. BASIC V2 to V7 is supported.</dd>
+</dl>
+
+<hr/>
+<h2>5. Database</h2>
+<p>
+To enable database support it is required to provide a jar file with the database driver, which is normally supplied by the database vendor.
+DroiD64 has been found to be working with the databases mentioned in the following sub chapters. 
+The database support enables tracking of the contents on every opened image file and makes it possible to search for images files and the files on them.
+You can still use DroiD64 without database support, but without the possibility to search for files.
+Different databases use different drivers, connection URLs and syntax. These are the parameters which needs to be setup for DroiD64.</p>
+<dl>
+  <dt><b>JDBC driver class</b></dt>
+  <dd>This is the driver implementation java class which is provided by the database vendor. Without this, DroiD64 will not know which driver to use. This is normally provided by a jar file which must be in the java class path for DroiD64.</dd>
+  <dt><b>Connection URL</b></dt>
+  <dd>The JDBC URL used to specify the location of your database. Typically it includes one or more of hostname, port number, file name.</dd>
+  <dt><b>User</b></dt>
+  <dd>The user name used to authenticate to your database.</dd>
+  <dt><b>Password</b></dt>
+  <dd>The password used to authenticate to your database.</dd>
+  <dt><b>Limit type</b></dt>
+  <dd>That syntax the database use to return a subset of all matching rows. <br>
+   MySQL, H2 and PostgreSQL use "<i>SELECT * FROM table <b>LIMIT</b> 10</i>".<br>
+   FirebirdSQL use "<i>SELECT <b>FIRST</b> 10 * FROM table</i>".<br> 
+   DB2 use "<i>SELECT * FROM table <b>FETCH FIRST</b> 10 ROWS ONLY</i>". </dd>
+</dl>
+<p>
+DroiD64 has been tested with MySQL, PostgreSQL, H2 and FirebirdSQL, but chances are good other databases work too.
+If you manage to use DroiD64 with some other database, please mail me the details and this manual will be updated.
+</p>
+
+<h3>5.1. Searching</h3>
+<p>Once the database setup is done in DroiD64, the <b>Search</b> top menu is available.</p>
+<dl>
+<dt>Search</dt><dd>Opens a search dialog</dd>
+<dt>Scan for disk images</dt><dd>Opens a directory dialog asking for a folder, which to start search recursively for disk images files which are supported by DroiD64. It can take a while if there are many files and folders to scan.</dd>
+<dt>Sync database and files</dt><dd>Check all disk image files in database and see if they still exists on your file system. Remove entries from database which no longer exists on file system.</dd>
+</dl>
+
+<h3>5.2.  MySQL </h3>
+  <table style="border-spacing:0px;padding=0px;border-collapse:separate;">
+    <tr><th>JDBC driver class:</th><td>com.mysql.cj.jdbc.Driver</td>
+    <tr><th>Connection URL:</th><td>jdbc:mysql://localhost:3306/droid64</td>
+    <tr><th>User:</th><td>droid64</td>
+    <tr><th>Password:</th><td>uridium</td>
+    <tr><th>Limit type:</th><td>LIMIT</td>
+  </table>
+  <p>Download the MySQL Connector/J JDBC driver from <a href="https://dev.mysql.com/downloads/connector/j/">https://dev.mysql.com/downloads/connector/j/</a>
+  and add its jar file to the java class path.</p>
+
+<h3>5.3. PostgreSQL </h3>
+  <table>
+    <tr><th>JDBC driver class:</th><td>org.postgresql.Driver</td>
+    <tr><th>Connection URL:</th><td>jdbc:postgresql://localhost:5432/droid64</td>
+    <tr><th>User:</th><td>droid64</td>
+    <tr><th>Password:</th><td>uridium</td>
+    <tr><th>Limit type:</th><td>LIMIT</td>
+  </table>
+
+<h3>5.4. H2 </h3>
+  <table>
+    <tr><th>JDBC driver class:</th><td>org.h2.Driver</td>
+    <tr><th>Connection URL:</th><td>jdbc:h2:file:~/.droid64.h2;INIT=RUNSCRIPT FROM '~/.droid64.sql'</td>
+    <tr><th>User:</th><td>droid64</td>
+    <tr><th>Password:</th><td>uridium</td>
+    <tr><th>Limit type:</th><td>LIMIT</td>
+  </table>
+  <p>You need to open the DroiD64 database settings dialog.<br>
+  Press the <i>Database SQL</i> button and save it on your computer. <br>
+  Modify the connection URL in the file you just saved.<br>
+  The connection URL contains the path to the database file and the SQL script to initiate the database.</p>
+
+<h3>5.5. Firebird SQL</h3>
+  <table>
+    <tr><th>JDBC driver class:</th><td>org.firebirdsql.jdbc.FBDriver</td>
+    <tr><th>Connection URL:</th><td>jdbc:firebirdsql://localhost:3050//var/lib/firebird/data/droid64?encoding=ISO8859_1</td>
+    <tr><th>User:</th><td>droid64</td>
+    <tr><th>Password:</th><td>uridium</td>
+    <tr><th>Limit type:</th><td>FIRST</td>
+  </table>
+  <p>In Firebird SQL version 3, you probably need to edit your <span style="font-family: monospace;">firebird.conf</span> file and set "<i>WireCrypt = Enabled</i>".</p>
+
+<h2>6. DroiD64 settings</h2>
+The configuration file (<font style="font-family:monospace">.droiD64.cfg</font>) is usually stored in the user's home directory, which differs depending on operating system.
+If it is missing, it will be recreated using defaults.
+<h3>6.1.  GUI </h3>
+<dl>
+	<dt>Confirm Exit</dt><dd> If checked, DroiD64 will ask for confirmation before closing the application.</dd>
+	<dt>Look &amp; feel</dt><dd> Choose between different Java look &amp; feels.</dd>
+	<dt>Disk Image Grid distance</dt><dd> Size of the rows in the file browser when an image is opened.</dd>
+	<dt>Local Files Grid distance</dt><dd> Size of the rows in the file browser when browsing the file system.</dd>
+	<dt>Disk Image Font size</dt><dd> Height of font used in file browser when an image is opened.</dd>
+	<dt>Local Files Font size</dt><dd> Height of the font used when browsing the file system.</dd>
+	<dt>Window size and location</dt><dd> The default position and size of the DroiD64 main window.</dd>
+	<dt>System font</dt><dd>Choose a TrueType font to use is file listing when browsing the file system. Check the check box to reset to the default font.</dd>
+	<dt>Commodore font</dt><dd>Choose a TrueType font to use when listing disk images. Check the check box to use the default bundled DroiD64 font</dd>
+</dl>
+
+<h3>6.2.  Files </h3>
+<dl>
+	<dt>Left default image dir</dt><dd> The path which will be opened in the left file browser when DroiD64 is started.</dd>
+	<dt>Right default image dir</dt><dd> The path which will be opened in the right file browser when DroiD64 is started.</dd>
+	<dt>Extension removal</dt><dd>Files whose name ends with any of the extensions in this comma separated list will have the file extension removed from its name when copied to a disk image. </dd>
+	<dt><i>&lt;ImageType&gt;</i> file extensions</dt><dd> Semicolon separated lists of file extensions used to identify disk image files.</dd>
+</dl>
+
+<h3>6.3.  Colors </h3>
+This setting page is used to configure the colors and color theme used in DroiD64.
+
+<h3>6.4.  Database </h3>
+The settings for database connectivity. See section 5 in this document for more details.
+
+<h3>6.5.  Plugin <i>&lt;number<&gt;</i></h3>
+Configure the plugin buttons. See section 3 in this document for more details.
+There is one sub tab for each of the plugin configurations available.
+
+<h2>7. Bookmarks</h2>
+Bookmarks are used to get quick access to your favorite locations and disk images. They are available under to Bookmarks top menu.
+Selecting "<i>Add bookmark</i>" adds a bookmark to the currently active disk panel.
+If a file is selected in the disk panel, the file will be selected when the bookmark is opened.
+A bookmark can have the properties below. Some properties are not available for all types of bookmarks.
+<dl>
+<dt>Name</dt><dd>The name of the bookmark, which is what is shown in the Bookmarks menu</dd>
+<dt>Type</dt><dd>The type of bookmark which is one of DISKIMAGE, DIRECTORY, SEPARATOR, FOLDER.</dd>
+<dt>Created</dt><dd>The date when the bookmark was added</dd>
+<dt>Plugin</dt><dd>A plugin which will be executed when the bookmark is opened.</dd>
+<dt>Selected file</dt><dd>The file which will be selected when the bookmark is opened. Please note, what is actually stored in the row number of the selected file, so if you rearrange the contents on a disk image, you need to update the bookmark too. This feature is intended for quick starting your favorite game, which you normally don't modify very often.</dd>
+<dt>Plugin arguments</dt><dd>Arguments passed to the plugin using the {ExtArguments} variable. This makes it possible to customize a plugin for the bookmarks. E.g. setting joystick, addons etc, in your emulator.</dd>
+<dt>Notes</dt><dd>Text that is shown in a non modal dialog when the plugin is started. This can be used to show cheat codes, hints and such things when starting a game in an emulator.</dd>
+</dl>
+
+</body>
+</html>

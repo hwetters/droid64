@@ -1,0 +1,43 @@
+<component>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>lib</outputDirectory>
+			<unpack>false</unpack>
+			<scope>runtime</scope>
+		</dependencySet>
+	</dependencySets>
+	<fileSets>
+		<fileSet>
+			<directory>target/bin</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>droid64.sh</include>
+			</includes>
+			<filtered>false</filtered>
+			<fileMode>0755</fileMode>
+			<lineEnding>unix</lineEnding>
+		</fileSet>
+		<fileSet>
+			<directory>target/bin</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>droid64.bat</include>
+			</includes>
+			<filtered>false</filtered>
+			<fileMode>0755</fileMode>
+			<lineEnding>dos</lineEnding>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/resources</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>copyright.txt</include>
+				<include>gpl.txt</include>
+			</includes>
+			<filtered>false</filtered>
+			<fileMode>0755</fileMode>
+			<lineEnding>unix</lineEnding>
+		</fileSet>
+
+	</fileSets>
+</component>

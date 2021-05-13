@@ -1,0 +1,154 @@
+<html>
+<dl>
+	<dt><b>Version 0.5b:</b></dt>
+	<dd>
+		<ul>
+			<li>Added ext_removal setting for configuration of extensions to be removed from file names when copying to a disk image.</li>
+			<li>Added export of database to XML.</li>
+			<li>Bookmarks and bookmark bar</li>
+			<li>Java 11 runtime required.</li>
+			<li>Improved error handling using dialog with stack trace.</li>
+			<li>Catch cyclic sector pointers when reading corrupt disk images.</li>
+			<li>Validate by checking REL file side sectors too.</li>
+			<li>Fixed sector offset bug with D82 images (Thanks to Steven for reporting it).</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.17b:</b></dt>
+	<dd>
+		<ul>
+			<li>BAM hex viewer editable.</li>
+			<li>Exclude regexp for images not to store in database-</li>
+			<li>Disassembler LDA ABS,Y bugfix - Thanks to Alberto for reporting it!</li>
+			<li>Pressing Home/End scrolls tables and texts to start/end (files, hex view, BAM view, search panel, text view)</li>
+			<li>Refactoring of code. Use of enums.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.16b:</b></dt>
+	<dd>
+		<ul>
+			<li>Added popup menues.</li>
+			<li>Create D81 partitions (makedir).</li>
+			<li>Moved the settings of the plugins to their own tabbed panel</li>
+			<li>HexViewer jump track/sector button.</li>
+			<li>HexViewer save data button.</li>
+			<li>The hide console has a default configuration setting.</li>
+			<li>Support for D88 (C8280) images (Big thanks to Christian for a lot of information and test using real hardware).</li>
+			<li>Viewing sectors in BAM viewer with buttons to navigate track and sector.</li>
+			<li>More disk panel button (8x4).</li>
+			<li>Added makedir button.</li>
+			<li>Added MD5 checksum button.</li>
+			<li>Added mirror button to open same image/folder as the other file panel.</li>
+			<li>Added reload in popup menu</li>
+			<li>Allow larger grid and fonts sizes in settings for improved support of higher resolution screens.</li>
+			<li>Improved error handling when parsing configuration file.</li>
+			<li>Select from available JDBC driver classes in settings dialog.</li>
+			<li>Improved GUI dialogs.</li>
+			<li>BAM editor allocate/free selected blocks.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.15b:</b></dt>
+	<dd>
+		<ul>
+			<li>Added setting to choose TrueType fonts file lists.</li>
+			<li>Fixed a file data bug in T64 (Thanks to Fredrik &Aring;berg for reporting it)</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.14b:</b></dt>
+	<dd>
+		<ul>
+			<li>Added browse history and back button.</li>
+			<li>Bugfix in BAM viewer when clicking invalid blocks.</li>
+			<li>C64 font in hex viewer.</li>
+			<li>Open same as other pane in current pane.</li>
+			<li>Requires Java 8 or higher.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.13b:</b></dt>
+	<dd>
+		<ul>
+			<li>Added MOS 6510 disassembler mode to hex viewer.</li>
+			<li>Added save as text from hex viewer.</li>
+			<li>Major code cleanup.</li>
+			<li>Keywords as arguments to plugins. See plugin setting tooltips for details.</li>
+			<li>MD5 checksum calculation. </li>
+			<li>D67, D80, D82 and T64 write support.</li>
+			<li>Plugin setting for forking new thread or not.</li>
+			<li>Drag and drop support.</li>
+			<li>Save hostname to database, so it can be used when searching.</li>
+			<li>Builtin DroiD64 user manual.</li>
+			<li>Changes to support H2 and Firebird SQL databases.</li>
+			<li>Moved texts to property file to enable locale support later on.</li>
+			<li>Navigate file lists with arrow, tab and enter keys.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.12b:</b></dt>
+	<dd>
+		<ul>
+			<li>D67 (Commodore 2040) support added.</li>
+			<li>D80 (Commodore 8050) readonly support added.</li>
+			<li>D82 (Commodore 8250) readonly support added.</li>
+			<li>LNX archive readonly support added.</li>
+			<li>Settings for file extensions.</li>
+			<li>Settings bug fix.</li>
+			<li>Support browsing zip files.</li>
+			<li>Disable buttons for unapplicable functions.</li>
+			<li>Reworked plugin settings so arguments can be used.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.11b:</b></dt>
+	<dd>
+		<ul>
+			<li>Edit BAM mode added.</li>
+			<li>Show C64 font when (re-)naming files and disks.</li>
+			<li>Printing added (file list, texts, hexdumps, images).</li>
+			<li>View texts using C64 font mode.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.1b:</b></dt>
+	<dd>
+		<ul>
+			<li>Merged buttons panels into one shared set of buttons.</li>
+			<li>Refactored settings.</li>
+			<li>D81 partition read support.</li>
+			<li>Double click file to open hex view or D81 partition.</li>
+			<li>Validation of D64, D71 and D81.</li>
+			<li>Move disk image files up and down.</li>
+			<li>Browse local file system.</li>
+			<li>Color settings.</li>
+			<li>Change size of console.</li>
+			<li>Change look and feel from settings GUI.</li>
+			<li>Colors on buttons.</li>
+			<li>Save console to file.</li>
+			<li>View BASIC V7 (i.e. C128).</li>
+			<li>D71 and D81 write support.</li>
+			<li>PostgreSQL database support.</li>
+			<li>Show SQL for setting up database.</li>
+			<li>Many bug fixes.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.065b:</b></dt>
+	<dd>
+		<ul>
+			<li>D71, D81 and T64 read support.</li>
+			<li>CP/M read support (D64, D71, D81).</li>
+			<li>Click sector in BAM to see hex dump.</li>
+			<li>View text, hexdump and BASIC from files.</li>
+			<li>Unload image.</li>
+			<li>View Koala images.</li>
+			<li>Bug fix for insert prg into D64.</li>
+			<li>Merged the two consoles into one shared.</li>
+			<li>Clear console menu option.</li>
+			<li>Implemented delete files from D64.</li>
+		</ul>
+	</dd>
+	<dt><b>Version 0.05b:</b></dt>
+	<dd>
+		<ul>
+			<li>Refactored code.</li>
+			<li>New look and feel.</li>
+			<li>Gzipped images.</li>
+			<li>Database support.</li>
+		</ul>
+	</dd>
+</dl>
+</html>

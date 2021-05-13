@@ -1,0 +1,402 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>droid64</groupId>
+	<artifactId>droid64</artifactId>
+	<version>0.9-SNAPSHOT</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss Z</maven.build.timestamp.format>
+		<sonar.language>java</sonar.language>
+		<sonar.host.url>http://localhost:9000/</sonar.host.url>
+		<droid64.java.version>1.11</droid64.java.version>
+		<droid64.java.release>11</droid64.java.release>
+		<droid64.url>http://droid64.sourceforge.net/</droid64.url>
+		<buildNumber>${maven.build.timestamp}</buildNumber>
+	</properties>
+
+	<build>
+		<plugins>
+			<!-- compile -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<release>${droid64.java.release}</release>
+				</configuration>
+			</plugin>
+			<!-- jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>droid64.DroiD64</mainClass>
+						</manifest>
+						<addMavenDescriptor>false</addMavenDescriptor>
+						<manifestEntries>
+							<Droid64-Build>${maven.build.timestamp}</Droid64-Build>
+							<Droid64-Release>${project.version}</Droid64-Release>
+							<Droid64-URL>${droid64.url}</Droid64-URL>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<!-- source jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- java doc jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<source>${droid64.java.release}</source>
+					<detectJavaApiLink>false</detectJavaApiLink>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- SonarQube scanner -->
+			<plugin>
+			<groupId>org.sonarsource.scanner.maven</groupId>
+			<artifactId>sonar-maven-plugin</artifactId>
+			<version>3.7.0.1746</version>
+			</plugin>
+			<!-- JaCoCo -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.5</version>
+				<executions>
+					<execution>
+						<id>default-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>default-report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>default-check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules />
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- zip and tar.gz assembly -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>src/assembly/bin.xml</descriptor>
+						<descriptor>src/assembly/bin-unix.xml</descriptor>
+						<descriptor>src/assembly/src.xml</descriptor>
+					</descriptors>
+					<tarLongFileMode>gnu</tarLongFileMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- dependency class path -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!--  build class path unix -->
+					<execution>
+						<goals>
+							<goal>build-classpath</goal>
+						</goals>
+						<configuration>
+							<outputFile>target/unix_cp.properties</outputFile>
+							<fileSeparator>/</fileSeparator>
+							<pathSeparator>:</pathSeparator>
+							<outputFilterFile>true</outputFilterFile>
+							<prefix>lib</prefix>
+							<includeScope>runtime</includeScope>
+						</configuration>
+						<id>unix_classpath</id>
+						<phase>prepare-package</phase>
+					</execution>
+					<!--  build class path windows -->
+					<execution>
+						<goals>
+							<goal>build-classpath</goal>
+						</goals>
+						<configuration>
+							<outputFile>target/windows_cp.properties</outputFile>
+							<fileSeparator>\\</fileSeparator>
+							<pathSeparator>;</pathSeparator>
+							<outputFilterFile>true</outputFilterFile>
+							<prefix>lib</prefix>
+							<includeScope>runtime</includeScope>
+						</configuration>
+						<id>windows_classpath</id>
+						<phase>prepare-package</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- script file generation -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>Inject classpath</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks> <!-- We copy the .sh files with injection -->
+								<copy todir="target/bin">
+									<fileset dir="src/main/resources">
+										<filename name="*.sh" />
+									</fileset>
+									<filterset>
+										<filtersfile file="target/unix_cp.properties" />
+										<filter token="batchJarName" value="${project.build.finalName}" />
+									</filterset>
+								</copy>
+								<copy todir="target/bin">
+									<fileset dir="src/main/resources">
+										<filename name="*.bat" />
+									</fileset>
+									<filterset>
+										<filtersfile file="target/windows_cp.properties" />
+										<filter token="batchJarName" value="${project.build.finalName}" />
+									</filterset>
+								</copy>
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Extra JVM heap size for Sonarqube -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M3</version>
+				<configuration>
+					<argLine>${argLine} -Xmx4G</argLine>
+				</configuration>
+			</plugin>
+
+			<!-- Create date string for web -->
+			<plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>buildnumber-maven-plugin</artifactId>
+			    <version>1.4</version>
+			    <executions>
+			        <execution>
+			            <phase>validate</phase>
+			            <goals>
+			                <goal>create-timestamp</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+			    <configuration>
+			        <timestampFormat>yyyy-MM-dd</timestampFormat>
+			        <timestampPropertyName>build.date</timestampPropertyName>
+			    </configuration>
+			</plugin>
+
+			<!-- Filter droid64 web -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-resource-one</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/web</outputDirectory>
+							<resources>
+								<resource>
+									<directory>web/htdocs</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>style.css</include>
+										<include>**/*.png</include>
+										<include>**/*.gif</include>
+										<include>**/droiD64_icons.tar.gz</include>
+									</includes>
+									<excludes>
+										<exclude>**/index.html</exclude>
+									</excludes>
+								</resource>
+								<resource>
+									<directory>web/htdocs</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>**/index.html</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<resources>
+			<!-- included property filtering -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+					<include>**/*.html</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.ttf</exclude>
+					<exclude>**/*.png</exclude>
+					<exclude>**/*.jpg</exclude>
+					<exclude>**/*.sql</exclude>
+					<exclude>**/*.txt</exclude>
+				</excludes>
+			</resource>
+			<!-- excluded property filtering -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+					<exclude>**/*.html</exclude>
+				</excludes>
+				<includes>
+					<include>**/*.ttf</include>
+					<include>**/*.png</include>
+					<include>**/*.jpg</include>
+					<include>**/*.sql</include>
+					<include>**/*.txt</include>
+				</includes>
+			</resource>
+		</resources>
+
+	</build>
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.22</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.200</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- https://firebirdsql.org/en/jdbc-driver/ -->
+		<dependency>
+			<groupId>org.firebirdsql.jdbc</groupId>
+			<artifactId>jaybird</artifactId>
+			<version>4.0.1.java11</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.2.18</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- jUnit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>3.5.15</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Jakarta XML binding API -->
+		<dependency>
+		  <groupId>jakarta.xml.bind</groupId>
+		  <artifactId>jakarta.xml.bind-api</artifactId>
+		  <version>2.3.3</version>
+		</dependency>
+		<!-- Jakarta XML binding implementation -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.3</version>
+            <scope>runtime</scope>
+        </dependency>
+		<!-- https://mvnrepository.com/artifact/jakarta.activation/jakarta.activation-api -->
+		<dependency>
+		    <groupId>jakarta.activation</groupId>
+		    <artifactId>jakarta.activation-api</artifactId>
+		    <version>1.2.2</version>
+            <scope>runtime</scope>
+		</dependency>
+	</dependencies>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+		</plugins>
+	</reporting>
+
+</project>
