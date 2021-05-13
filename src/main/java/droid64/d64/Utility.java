@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -726,6 +727,10 @@ public class Utility {
 		}
 	}
 
+	/**
+	 * @param data the bytes
+	 * @return string with traditional hexdump. 16 bytes per row. offset first and ASCII at end.
+	 */
 	public static String hexDump(byte[] data) {
 		if (data == null) {
 			return "null";
@@ -753,6 +758,14 @@ public class Utility {
 		return buf.toString();
 	}
 
+
+	/**
+	 * @param bytes the bytes
+	 * @return string with the bytes as space separated hexdecimals on one single line
+	 */
+	public static String hexDumpData(byte[] bytes) {
+		return bytes != null ? IntStream.range(0, bytes.length).mapToObj(a -> getByteString(bytes[a])).collect(Collectors.joining(" ")) : "";
+	}
 
 	/**
 	 * Sort array of files

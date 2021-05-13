@@ -141,7 +141,7 @@ public class DiskDaoImpl implements DiskDao {
 	public Stream<Disk> search(DiskSearchCriteria criteria) throws DatabaseException {
 		Stream.Builder<Disk> builder = Stream.builder();
 
-		String columns = "d.diskid, d.filepath, d.filename, d.label, df.fileid, df.name, df.filetype, df.size, df.fileNum, df.flags, d.updated, d.imagetype, d.errors, d.warnings, d.hostname";
+		String columns = "d.diskid, d.filepath, d.filename, d.label, df.fileid, df.name, df.filetype, df.size, df.fileNum, df.flags, d.updated, d.imagetype, d.errors, d.warnings, d.hostname, df.namebytes";
 		var sqlBuf = new StringBuilder();
 		sqlBuf.append(SELECT);
 		if (DaoFactory.getLimitType() == DaoFactory.LimitType.FIRST) {
@@ -287,7 +287,7 @@ public class DiskDaoImpl implements DiskDao {
 		if (disk == null) {
 			return;
 		}
-		String sql = "SELECT d.diskid, d.filepath, d.filename, d.label, df.fileid, df.name, df.filetype, df.size, df.fileNum, df.flags, d.imagetype, d.errors, d.warnings, d.hostname " +
+		String sql = "SELECT d.diskid, d.filepath, d.filename, d.label, df.fileid, df.name, df.filetype, df.size, df.fileNum, df.flags, d.imagetype, d.errors, d.warnings, d.hostname, df.namebytes " +
 				"FROM disk d " +
 				"LEFT JOIN diskfile df ON df.diskid = d.diskid " +
 				"WHERE d.filePath = ? AND d.filename = ? AND (UPPER(hostname) = ? OR hostname IS NULL)" +
@@ -370,6 +370,7 @@ public class DiskDaoImpl implements DiskDao {
 			oldFile.setSize(rs.getInt(8));
 			oldFile.setFileNum(rs.getInt(9));
 			oldFile.setFlags(rs.getInt(10));
+			oldFile.setNameAsBytes(getBytes(rs, 15));
 			disk.getDiskFiles().add(oldFile);
 		}
 		return disk;
@@ -495,7 +496,7 @@ public class DiskDaoImpl implements DiskDao {
 	private void saveDiskFile(DiskFile file, Connection conn) throws DatabaseException {
 		int idx = 1;
 		if (file.isInsert()) {
-			String sql = "INSERT INTO diskfile(diskid,name,filetype,size,filenum,flags) VALUES (?,?,?,?,?,?)";
+			String sql = "INSERT INTO diskfile(diskid,name,filetype,size,filenum,flags,namebytes) VALUES (?,?,?,?,?,?,?)";
 			try (var stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 				stmt.setLong(idx++, file.getDiskId());
 				stmt.setString(idx++, file.getName());
@@ -503,18 +504,20 @@ public class DiskDaoImpl implements DiskDao {
 				stmt.setInt(idx++, file.getSize());
 				stmt.setInt(idx++, file.getFileNum());
 				stmt.setInt(idx++, file.getFlags());
+				stmt.setBytes(idx++, file.getNameAsBytes());
 				stmt.executeUpdate();
 			} catch (SQLException  e) {
 				rollback("Insert failed. " + e.getMessage()+" : "+file, e, conn);
 			}
 		} else if (file.isUpdate()) {
-			String sql = "UPDATE diskfile SET name=?,filetype=?,size=?,filenum=?,flags=? WHERE diskid=? AND fileid=?";
+			String sql = "UPDATE diskfile SET name=?,filetype=?,size=?,filenum=?,flags=?,namebytes=? WHERE diskid=? AND fileid=?";
 			try (var stmt = conn.prepareStatement(sql)) {
 				stmt.setString(idx++, file.getName());
 				stmt.setInt(idx++, file.getFileType()!=null?file.getFileType().type:0);
 				stmt.setInt(idx++, file.getSize());
 				stmt.setInt(idx++, file.getFileNum());
 				stmt.setInt(idx++, file.getFlags());
+				stmt.setBytes(idx++, file.getNameAsBytes());
 				stmt.setLong(idx++, file.getDiskId());
 				stmt.setLong(idx++, file.getFileId());
 				stmt.executeUpdate();
@@ -585,7 +588,7 @@ public class DiskDaoImpl implements DiskDao {
 	}
 
 	private List<DiskFile> getFiles(Disk disk) throws SQLException, DatabaseException {
-		final String sql = SELECT + " diskId, fileid, name, filetype, size, fileNum, flags FROM diskfile WHERE diskId=? ORDER BY fileid";
+		final String sql = SELECT + " diskId, fileid, name, filetype, size, fileNum, flags, namebytes FROM diskfile WHERE diskId=? ORDER BY fileid";
 		try (var stmt = DaoFactoryImpl.prepareStatement(sql)) {
 			stmt.setLong(1, disk.getDiskId());
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -607,6 +610,7 @@ public class DiskDaoImpl implements DiskDao {
 		vo.setSize(rs.getInt(5));
 		vo.setFileNum(rs.getInt(6));
 		vo.setFlags(rs.getInt(7));
+		vo.setNameAsBytes(getBytes(rs, 8));
 		return vo;
 	}
 
@@ -631,6 +635,11 @@ public class DiskDaoImpl implements DiskDao {
 		} else {
 			stmt.setInt(col,  value.intValue());
 		}
+	}
+
+	private byte[] getBytes(ResultSet rs, int col) throws SQLException {
+		byte[] bytes = rs.getBytes(col);
+		return rs.wasNull() ? null : bytes;
 	}
 
 }

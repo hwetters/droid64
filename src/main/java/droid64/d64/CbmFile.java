@@ -34,6 +34,9 @@ import java.util.Optional;
 public class CbmFile implements Comparable<CbmFile>, Serializable {
 
 	private static final long serialVersionUID = 1L;
+
+	public static final int MAX_NAME_LENGTH = 16;
+
 	private boolean fileScratched;
 	private FileType fileType;
 	private boolean fileLocked;
@@ -41,6 +44,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 	private int track;
 	private int sector;
 	private String name; // string[16]
+	private byte[] nameAsBytes = new byte[MAX_NAME_LENGTH];
 	private int relTrack;
 	private int relSector;
 	private int recordLength;
@@ -80,6 +84,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 		track = 0;
 		sector = 0;
 		name = Utility.EMPTY;
+		Arrays.fill(nameAsBytes, (byte) 0);
 		relTrack = 0;
 		relSector = 0;
 		recordLength = 0;
@@ -106,6 +111,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 		this.track = that.track;
 		this.sector = that.sector;
 		this.name = that.name;
+		System.arraycopy(that.nameAsBytes, 0, this.nameAsBytes, 0, MAX_NAME_LENGTH);
 		this.relTrack = that.relTrack;
 		this.relSector = that.relSector;
 		this.recordLength = that.recordLength;
@@ -155,8 +161,9 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 		track = data[position + 0x03] & 0xff;
 		sector = data[position + 0x04] & 0xff;
 		var buf = new StringBuilder();
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < MAX_NAME_LENGTH; i++) {
 			int c = data[position + 0x05 + i] & 0xff;
+			nameAsBytes[i] = (byte) (c & 0xff);
 			if (c != (Utility.BLANK & 0xff)) {
 				buf.append((char) (Utility.PETSCII_TABLE[c]));
 			}
@@ -232,6 +239,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 		builder.append(" loadAddr=").append(loadAddr);
 		builder.append(" lsu=").append(lsu);
 		builder.append(" name=").append(name);
+		builder.append(" nameAsBytes=").append(Utility.hexDumpData(nameAsBytes));
 		builder.append(" offSet=").append(offSet);
 		builder.append(" relSector=").append(relSector);
 		builder.append(" relTrack=").append(relTrack);
@@ -284,6 +292,13 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * @return name
+	 */
+	public byte[] getNameAsBytes() {
+		return nameAsBytes;
 	}
 
 	/**
@@ -376,6 +391,13 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 	 */
 	public void setName(String string) {
 		name = string;
+	}
+
+	/**
+	 * @param bytes the new name as bytes
+	 */
+	public void setNameAsBytes(byte[] bytes) {
+		System.arraycopy(bytes, 0, this.nameAsBytes, 0, MAX_NAME_LENGTH);
 	}
 
 	/**

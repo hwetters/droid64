@@ -80,7 +80,7 @@ public class T64Test extends DiskImageBaseTest {
 
 		copy[0] = data[0];
 		copy[1] = data[1];
-		compareData(data, Arrays.copyOfRange(copy, 0, copy.length - 2));
+		compareData(data, Arrays.copyOfRange(copy, 0, copy.length));
 
 		// delete file
 		if (deleteFile) {

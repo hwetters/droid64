@@ -130,7 +130,7 @@ public class T64 extends DiskImage {
 			if (cbmDisk.length <  dataEnd || dataStart < 0) {
 				throw new CbmException("T64 file ["+number+"] ends at 0x"+Integer.toHexString(dataEnd)+" outside image of size "+Integer.toHexString(cbmDisk.length)+'.');
 			}
-			byte[] data = new byte[cf.getSizeInBytes() + 2];
+			byte[] data = new byte[cf.getSizeInBytes()];
 			if (cf.getSizeInBytes() <= 0) {
 				return data;
 			}

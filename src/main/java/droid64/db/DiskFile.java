@@ -1,6 +1,7 @@
 package droid64.db;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -10,6 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import droid64.d64.CbmFile;
 import droid64.d64.FileType;
+import droid64.d64.Utility;
 
 /**
  * Persistent value class for representing one file on a disk image
@@ -23,7 +25,8 @@ import droid64.d64.FileType;
 	"fileType",
 	"size",
 	"fileNum",
-	"flags"
+	"flags",
+	"nameAsBytes"
 })
 public class DiskFile extends Value implements Serializable {
 
@@ -41,6 +44,7 @@ public class DiskFile extends Value implements Serializable {
 	private int size;
 	private int fileNum;
 	private int flags;
+	private final byte[] nameAsBytes = new byte[CbmFile.MAX_NAME_LENGTH];
 
 	public static final int FLAG_LOCKED = 1;
 	public static final int FLAG_NOT_CLOSED = 2;
@@ -55,6 +59,7 @@ public class DiskFile extends Value implements Serializable {
 		this.fileType = cf.getFileType();
 		this.fileNum = fileNumber;
 		this.flags = (cf.isFileLocked() ? DiskFile.FLAG_LOCKED : 0) | (cf.isFileClosed() ? 0 : DiskFile.FLAG_NOT_CLOSED);
+		System.arraycopy(cf.getNameAsBytes(), 0, nameAsBytes, 0, CbmFile.MAX_NAME_LENGTH);
 	}
 
 	public int getFlags() {
@@ -117,6 +122,20 @@ public class DiskFile extends Value implements Serializable {
 		return fileType != null ? fileType.name() : "???";
 	}
 
+	public void setNameAsBytes(byte[] bytes) {
+		if (bytes == null) {
+			Arrays.fill(nameAsBytes, (byte) 0);
+		} else {
+			for (int i = 0; i < CbmFile.MAX_NAME_LENGTH; i++) {
+				nameAsBytes[i] = bytes.length > i ? bytes[i] : 0;
+			}
+		}
+	}
+
+	public byte[] getNameAsBytes() {
+		return nameAsBytes;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -129,6 +148,7 @@ public class DiskFile extends Value implements Serializable {
 		builder.append(" .fileNum=").append(fileNum);
 		builder.append(" .fileType=").append(fileType);
 		builder.append(" .state=").append(getState());
+		builder.append(" .nameAsBytes=").append(Utility.hexDumpData(nameAsBytes));
 		builder.append(']');
 		return builder.toString();
 	}
