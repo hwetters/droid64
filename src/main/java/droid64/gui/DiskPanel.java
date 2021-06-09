@@ -794,6 +794,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 								var data = Utility.readFile(sourceFile);
 								var cbmFile = new CbmFile();
 								cbmFile.setName(Utility.cbmFileName(filename, DiskImage.DISK_NAME_LENGTH));
+								cbmFile.setNameAsBytes(cbmFile.getName().getBytes());
 								cbmFile.setFileType(CbmFile.getFileTypeFromFileExtension(filename));
 								success = otherDiskPanel.diskImage.saveFile(cbmFile, false, data);
 								if (!success) {

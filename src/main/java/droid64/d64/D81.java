@@ -1109,6 +1109,7 @@ public class D81 extends DiskImage {
 		feedbackStream.append("D81.makedir: track ").append(t0).append('-').append(t1).append('\n');
 		CbmFile cbmFile = new CbmFile();
 		cbmFile.setName(dirName);
+		cbmFile.setNameAsBytes(dirName.getBytes());
 		cbmFile.setFileType(FileType.CBM);
 		cbmFile.setSizeInBlocks(numTracks * TRACK_SECTORS);
 		addDirectoryEntry(cbmFile, t0, 0, false, numTracks * TRACK_SECTORS * 254);

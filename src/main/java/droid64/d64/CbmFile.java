@@ -397,7 +397,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 	 * @param bytes the new name as bytes
 	 */
 	public void setNameAsBytes(byte[] bytes) {
-		System.arraycopy(bytes, 0, this.nameAsBytes, 0, MAX_NAME_LENGTH);
+		System.arraycopy(bytes, 0, this.nameAsBytes, 0, Math.min(MAX_NAME_LENGTH, bytes.length));
 	}
 
 	/**
@@ -597,7 +597,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 		data[offset + 4] = (byte) sector;
 		// FileName
 		for (int i = 0; i < DiskImage.DISK_NAME_LENGTH; i++) {
-			data[offset + 5 + i] = i < name.length() ? (byte) name.charAt(i) : Utility.BLANK;
+			data[offset + 5 + i] = i < name.length() ? (byte) nameAsBytes[i] : Utility.BLANK;
 		}
 		// relative Track/Sector
 		data[offset + 21] = (byte) relTrack;

@@ -96,6 +96,7 @@ public class T64 extends DiskImage {
 				int offset = Utility.getInt32(cbmDisk, pos + 0x08);
 				String name = Utility.trimTrailing(Utility.getString(cbmDisk, pos+0x10, 16));
 				CbmFile cf = new CbmFile(name, FileType.get(cbmDisk[pos + 0x01] & 0x07), dirPosition, dirPosition++, offset, size);
+				cf.setNameAsBytes(Arrays.copyOfRange(cbmDisk, pos+0x10,pos+0x20));
 				cf.setTrack(Utility.getInt16(cbmDisk, pos + 0x08));
 				cf.setSector(Utility.getInt16(cbmDisk,pos + 0x0a));
 				cf.setOffSet(offset);

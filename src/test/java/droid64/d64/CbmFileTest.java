@@ -101,6 +101,7 @@ public class CbmFileTest {
 		cbmFile.setTrack(0);
 		cbmFile.setSector(0);
 		cbmFile.setName("FILENAME");
+		cbmFile.setNameAsBytes("FILENAME".getBytes());
 		cbmFile.setRelTrack(0);
 		cbmFile.setRelSector(0);
 		cbmFile.setSizeInBytes(2);

@@ -353,6 +353,18 @@ public abstract class DiskImage implements Serializable {
 	 * @return true if writing was successful (if there was enough space on disk image etc)
 	 */
 	public boolean saveFile(CbmFile cbmFile, boolean isCopyFile, byte[] saveData) {
+		return saveFile(cbmFile, isCopyFile, saveData, saveData.length);
+	}
+
+	/**
+	 * Write the data and the directory entry of a single file to disk image.
+	 * @param cbmFile the cbm file to save
+	 * @param isCopyFile indicates whether a file is copied or whether a file gets inserted into the directory
+	 * @param saveData the data to write to the file
+	 * @param overrideByteSize the length in bytes
+	 * @return true if writing was successful (if there was enough space on disk image etc)
+	 */
+	public boolean saveFile(CbmFile cbmFile, boolean isCopyFile, byte[] saveData, int overrideByteSize) {
 		if (isCpmImage()) {
 			feedbackStream.append("saveFile: Not yet implemented for CP/M format.\n");
 			return false;
@@ -373,7 +385,7 @@ public abstract class DiskImage implements Serializable {
 			firstBlock = saveFileData(saveData);
 		}
 		if (firstBlock != null) {
-			if (addDirectoryEntry(cbmFile, firstBlock.track, firstBlock.sector, isCopyFile, saveData.length)) {
+			if (addDirectoryEntry(cbmFile, firstBlock.track, firstBlock.sector, isCopyFile, overrideByteSize)) {
 				return true;
 			}
 		} else {

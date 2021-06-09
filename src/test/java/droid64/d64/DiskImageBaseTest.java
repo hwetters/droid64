@@ -40,6 +40,7 @@ public abstract class DiskImageBaseTest {
 		// create file
 		CbmFile cbmFile = new CbmFile();
 		cbmFile.setName(fileName);
+		cbmFile.setNameAsBytes(fileName.getBytes());
 		cbmFile.setFileType(FileType.PRG);
 		cbmFile.setLoadAddr(0);
 		// save file
@@ -117,7 +118,7 @@ public abstract class DiskImageBaseTest {
 
 		// read file
 		CbmFile copyFile = img.findFile(fileName, FileType.PRG);
-		Assert.assertNotNull("Copy file ", copyFile);
+		Assert.assertNotNull("Copy file was null ", copyFile);
 		Assert.assertEquals("Copy file position ", num - 1, copyFile.getDirPosition());
 		byte[] copy = img.getFileData(copyFile.getDirPosition());
 		Assert.assertNotNull("Copy data ", copy);
