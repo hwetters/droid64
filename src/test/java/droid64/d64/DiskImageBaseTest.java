@@ -77,7 +77,7 @@ public abstract class DiskImageBaseTest {
 	}
 
 	protected File getTempFile(String suffix) throws IOException {
-		return getTempFile(suffix, true);
+		return getTempFile(suffix, false);
 	}
 
 	protected File getTempFile(String suffix, boolean deleteOnExit) throws IOException {
@@ -93,10 +93,10 @@ public abstract class DiskImageBaseTest {
 			CbmFile cf = img.getCbmFile(i);
 			img.deleteFile(cf);
 		}
-	}
-
+	}	
 	protected void importExportNumfiles(DiskImage img, File imgFile, int fileNumberLimit, int maxFreeBlocks)
-			throws CbmException {
+			throws CbmException, IOException {
+
 		for (int i = 0; i < fileNumberLimit; i++) {
 			importExportFile(img, i + 1, TEST_NUM_FILES_SIZE, false);
 		}
@@ -107,8 +107,8 @@ public abstract class DiskImageBaseTest {
 		img.saveAs(imgFile);
 		img.readDirectory();
 		img.readBAM();
-		Assert.assertEquals("Free block count ", maxFreeBlocks, img.getBlocksFree());
 		Assert.assertEquals("File number max ", 0, img.getFilesUsedCount());
+		Assert.assertEquals("Free block count ", maxFreeBlocks, img.getBlocksFree());
 	}
 
 	protected void importExportFile(DiskImage img, int num, int size, boolean deleteFile) throws CbmException {

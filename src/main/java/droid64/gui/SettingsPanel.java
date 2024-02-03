@@ -2,6 +2,7 @@ package droid64.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
@@ -37,7 +39,9 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import droid64.d64.Utility;
 import droid64.db.DaoFactory;
@@ -85,7 +89,7 @@ public class SettingsPanel extends JPanel {
 			Utility.getMessage(Resources.DROID64_SETTINGS_HIDECONSOLE));
 	private final JCheckBox bookmarkBarCheckBox = new JCheckBox(
 			Utility.getMessage(Resources.DROID64_SETTINGS_BOOKMARKBAR));
-	private final JComboBox<String> lookAndFeelBox = new JComboBox<>(MainPanel.getLookAndFeelNames());
+	private final JComboBox<UIManager.LookAndFeelInfo> lookAndFeelBox = new JComboBox<>(UIManager.getInstalledLookAndFeels());
 	private final JSpinner rowHeightSpinner = new JSpinner(
 			new SpinnerNumberModel((int) Setting.ROW_HEIGHT.getInteger(), 8, 256, 1));
 	private final JSpinner localRowHeightSpinner = new JSpinner(
@@ -150,6 +154,7 @@ public class SettingsPanel extends JPanel {
 	private final JTextArea[] pluginArgumentTextField = new JTextArea[Setting.MAX_PLUGINS];
 	private final JTextArea[] pluginDescriptionTextField = new JTextArea[Setting.MAX_PLUGINS];
 	private final JCheckBox[] forkThreadCheckBox = new JCheckBox[Setting.MAX_PLUGINS];
+
 	// Database settings
 	private final JCheckBox useJdbcCheckBox = new JCheckBox(Utility.getMessage(Resources.DROID64_SETTINGS_JDBC_USEDB));
 	private final JTextField jdbcDriver = new JTextField(Setting.JDBC_DRIVER.getString());
@@ -181,22 +186,40 @@ public class SettingsPanel extends JPanel {
 	public SettingsPanel(String title, MainPanel mainPanel) {
 		this.title = title;
 		this.mainPanel = mainPanel;
+			
+		lookAndFeelBox.setRenderer(new BasicComboBoxRenderer() {
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				var text = Optional.ofNullable(value)
+						.filter(UIManager.LookAndFeelInfo.class::isInstance)
+						.map(UIManager.LookAndFeelInfo.class::cast)
+						.map(UIManager.LookAndFeelInfo::getName)
+						.orElse(String.valueOf(value));
+				setText(text);
+				return this;
+			}
+		});
 
 		setLayout(new BorderLayout());
 		var tabPane = new JTabbedPane();
-		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_GUI), drawGuiPanel());
-		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_FILES), drawFilesPanel());
-		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_COLORS), drawColorPanel());
-		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_DATABASE), drawDatabasePanel());
+		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_GUI), new JScrollPane(drawGuiPanel()));
+		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_FILES), new JScrollPane(drawFilesPanel()));
+		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_COLORS), new JScrollPane(drawColorPanel()));
+		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_DATABASE), new JScrollPane(drawDatabasePanel()));
 
 		var pluginTabPane = new JTabbedPane();
 		var pluginPanel = drawPluginPanel();
 		for (var i = 0; i < Setting.MAX_PLUGINS; i++) {
 			pluginTabPane.addTab(Integer.toString(i + 1), pluginPanel[i]);
 		}
-		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_PLUGIN), pluginTabPane);
+		tabPane.addTab(Utility.getMessage(Resources.DROID64_SETTINGS_TAB_PLUGIN), new JScrollPane(pluginTabPane));
 
-		add(new JScrollPane(tabPane), BorderLayout.CENTER);
+		add(tabPane, BorderLayout.CENTER);
 
 		add(drawGeneralPanel(), BorderLayout.SOUTH);
 		addHierarchyListener(e -> GuiHelper.hierarchyListenerResizer(SwingUtilities.getWindowAncestor(this)));
@@ -225,15 +248,15 @@ public class SettingsPanel extends JPanel {
 		generalPanel.add(txtPanel, BorderLayout.NORTH);
 		return generalPanel;
 	}
-
+	
 	private JPanel drawFilesPanel() {
 		var guiPanel = new JPanel(new GridBagLayout());
 		var gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-		FilePathPanel fp1 = new FilePathPanel(Setting.DEFAULT_IMAGE_DIR.getFile(), JFileChooser.DIRECTORIES_ONLY,
+		var fp1 = new FilePathPanel(Setting.DEFAULT_IMAGE_DIR.getFile(), JFileChooser.DIRECTORIES_ONLY,
 				Setting.DEFAULT_IMAGE_DIR::set);
-		FilePathPanel fp2 = new FilePathPanel(Setting.DEFAULT_IMAGE_DIR2.getFile(), JFileChooser.DIRECTORIES_ONLY,
+		var fp2 = new FilePathPanel(Setting.DEFAULT_IMAGE_DIR2.getFile(), JFileChooser.DIRECTORIES_ONLY,
 				Setting.DEFAULT_IMAGE_DIR2::set);
 
 		GuiHelper.addToGridBag(0, 0, 0.0, 0.0, 1, gbc, guiPanel,
@@ -300,9 +323,8 @@ public class SettingsPanel extends JPanel {
 		lookAndFeelBox.setToolTipText(Utility.getMessage(Resources.DROID64_SETTINGS_LOOKFEEL_TOOLTIP));
 		lookAndFeelBox.setEditable(false);
 		lookAndFeelBox.setSelectedIndex(0);
-		lookAndFeelBox.setSelectedIndex(Setting.LOOK_AND_FEEL.getInteger() < MainPanel.getLookAndFeelNames().length
-				? Setting.LOOK_AND_FEEL.getInteger()
-				: 0);
+		var laf=GuiHelper.getLookAndFeels().stream().filter(f->f.getClassName().equals(Setting.LOOK_AND_FEEL.getString())).findFirst().orElse(null);
+		lookAndFeelBox.setSelectedItem(laf);
 
 		rowHeightSpinner.setToolTipText(Utility.getMessage(Resources.DROID64_SETTINGS_GRIDSPACING_TOOLTIP));
 
@@ -440,7 +462,7 @@ public class SettingsPanel extends JPanel {
 		imageRowHeightPanel.add(new JPanel(), BorderLayout.CENTER);
 
 		GuiHelper.addToGridBag(0, 0, 0.0, 0.0, 1, gbc, guiPanel, new JPanel());
-		GuiHelper.addToGridBag(1, 0, 0.0, 0.0, 1, gbc, guiPanel, checkboxPanel);
+		GuiHelper.addToGridBag(1, 0, 1.0, 0.0, 1, gbc, guiPanel, checkboxPanel);
 		GuiHelper.addToGridBag(2, 0, 0.0, 0.0, 1, gbc, guiPanel, new JPanel());
 
 		addField(1, Resources.DROID64_SETTINGS_LOOKFEEL, lookAndFeelBox, guiPanel, gbc);
@@ -468,7 +490,10 @@ public class SettingsPanel extends JPanel {
 		Setting.HIDECONSOLE.set(hideConsoleCheckBox.isSelected());
 		Setting.COLOUR.set(colourBox.getSelectedIndex());
 		Setting.ROW_HEIGHT.set(Integer.parseInt(rowHeightSpinner.getValue().toString()));
-		Setting.LOOK_AND_FEEL.set(lookAndFeelBox.getSelectedIndex());
+		Setting.LOOK_AND_FEEL.set(Optional.ofNullable(lookAndFeelBox.getSelectedItem())
+				.map(UIManager.LookAndFeelInfo.class::cast)
+				.map(UIManager.LookAndFeelInfo::getClassName)
+				.orElse(Setting.DEFAULT_LOOK_AND_FEEL_CLASS));
 		Setting.LOCAL_ROW_HEIGHT.set(Integer.parseInt(localRowHeightSpinner.getValue().toString()));
 		Setting.USE_DB.set(useJdbcCheckBox.isSelected());
 		Setting.JDBC_DRIVER.set(jdbcDriver.getText());
@@ -751,7 +776,7 @@ public class SettingsPanel extends JPanel {
 	 * @return JPanel[]
 	 */
 	private JPanel[] drawPluginPanel() {
-		JPanel[] pluginPanel = new JPanel[Setting.MAX_PLUGINS];
+		var pluginPanel = new JPanel[Setting.MAX_PLUGINS];
 
 		var fileFilter = new FileFilter() {
 			@Override
@@ -782,7 +807,7 @@ public class SettingsPanel extends JPanel {
 					Utility.getMessage(Resources.DROID64_SETTINGS_EXE_DESCR_TOOLTIP));
 			forkThreadCheckBox[i] = new JCheckBox(Utility.EMPTY, true);
 			forkThreadCheckBox[i].setToolTipText(Utility.getMessage(Resources.DROID64_SETTINGS_EXE_FORK_TOOLTIP));
-
+			
 			var prg = Setting.getExternalProgram(i);
 			if (prg != null) {
 				pluginLabelTextField[i].setText(prg.getLabel());
@@ -811,7 +836,7 @@ public class SettingsPanel extends JPanel {
 			GuiHelper.addToGridBag(0, 4, 0.0, 0.0, 1, gbc, pluginPanel[i],
 					new JLabel(Utility.getMessage(Resources.DROID64_SETTINGS_EXE_FORK)));
 			GuiHelper.addToGridBag(1, 4, 0.5, 0.0, 1, gbc, pluginPanel[i], forkThreadCheckBox[i]);
-
+	
 			GuiHelper.addToGridBag(0, 5, 0.5, 1.0, 2, gbc, pluginPanel[i], new JPanel());
 		}
 		return pluginPanel;

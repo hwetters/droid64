@@ -16,7 +16,7 @@ import droid64.d64.Utility;
 public class DiskDAOImplTest {
 
 	private final static String CLASSNAME = "org.h2.Driver";
-	private final static String URL = "jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'src/test/resources/droid64/db/setup_h2.sql';DB_CLOSE_DELAY=-1";
+	private final static String URL = "jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'src/test/resources/droid64/db/setup_h2.sql';DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4;TRACE_LEVEL_SYSTEM_OUT=3";
 	private final static String USER = "unittest";
 	private final static String PASSWORD = "secret";
 	private final static int MAXROWS = 10;

@@ -18,7 +18,7 @@ public class T64Test extends DiskImageBaseTest {
 	@Test
 	public void testToString() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new T64(consoleStream).toString().isEmpty());
+		Assert.assertFalse(new T64(DiskImageType.T64, consoleStream).toString().isEmpty());
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class T64Test extends DiskImageBaseTest {
 	public void testBlankNewImage() throws IOException, CbmException {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".t64");
-		T64 t64 = new T64(consoleStream);
+		T64 t64 = new T64(DiskImageType.T64, consoleStream);
 		Assert.assertTrue(t64.equals(t64));
 		Assert.assertTrue("Create T64 image ", t64.saveNewImage(imgFile, "T64 UNIT TEST", "00T64"));
 		t64.readDirectory();
@@ -48,7 +48,7 @@ public class T64Test extends DiskImageBaseTest {
 	public void testImportExportSizes() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".t64");
-		T64 img = new T64(consoleStream);
+		T64 img = new T64(DiskImageType.T64, consoleStream);
 		Assert.assertTrue("Create T64 image ", img.saveNewImage(imgFile, "T64 UNIT TEST", "00T64"));
 		for (int i = 2; i < TEST_FILE_SIZE_MAX; i++) {
 			importExportFile(img, 1, i, true);
@@ -60,7 +60,7 @@ public class T64Test extends DiskImageBaseTest {
 	public void testImportExportNumFiles() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".t64");
-		T64 img = new T64(consoleStream);
+		T64 img = new T64(DiskImageType.T64, consoleStream);
 		Assert.assertTrue("Create T64 image ", img.saveNewImage(imgFile, "T64 UNIT TEST", "00T64"));
 		importExportNumfiles(img, imgFile, 100, 0);
 	}

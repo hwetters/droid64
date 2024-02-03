@@ -1,12 +1,5 @@
 package droid64.cfg;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Parameter", propOrder = {"name", "type", "value" })
 public abstract class Parameter<T> implements Comparable<Parameter<?>> {
 
 	protected static final String STRING_LIST_SPLIT_EXPR = "\\s*[;]\\s*";
@@ -14,15 +7,12 @@ public abstract class Parameter<T> implements Comparable<Parameter<?>> {
 	protected static final String DELIM = ";";
 	protected static final String TUPEL_DELIM = ",";
 
-	@XmlElement(required = true)
 	private final String name;
-	@XmlElement(required = true)
 	private final ParameterType type;
-	@XmlElement(required = false)
 	private T value;
 	private T defaultValue;
 
-	public Parameter(String name, ParameterType type) {
+	protected Parameter(String name, ParameterType type) {
 		this.name = name;
 		this.type = type;
 	}

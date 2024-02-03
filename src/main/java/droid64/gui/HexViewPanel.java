@@ -187,35 +187,41 @@ public class HexViewPanel extends JPanel {
 	}
 
 	private void tableSelectionAction(DiskImage diskImage) {
-		selectedTrack = -1;
-		selectedSector = -1;
+		try {
+			selectedTrack = -1;
+			selectedSector = -1;
 
-		goBlockButton.setText("---:---");
-		goBlockButton.setEnabled(false);
+			goBlockButton.setText("---:---");
+			goBlockButton.setEnabled(false);
 
-		int r = table.getSelectedRow();
-		int c = table.getSelectedColumn();
-		if (r < 0 || c == 0 || c >= table.getColumnCount() - 1) {
-			return;
-		}
-		int t = Integer.valueOf((String)table.getValueAt(r, c), 16);
-		if (t < diskImage.getFirstTrack() || t > diskImage.getTrackCount()) {
-			return;
-		}
-		if (++c >= table.getColumnCount() - 1) {
-			c = 1;
-			if (++r >= table.getRowCount()) {
+			int r = table.getSelectedRow();
+			int c = table.getSelectedColumn();
+			if (r < diskImage.getFirstTrack() || c >= table.getColumnCount() - 1) {
 				return;
 			}
+
+			int t = Integer.valueOf((String) table.getValueAt(r, c), 16);
+			if (t < diskImage.getFirstTrack() || t > diskImage.getTrackCount()) {
+				return;
+			}
+			if (++c >= table.getColumnCount() - 1) {
+				c = 1;
+				if (++r >= table.getRowCount()) {
+					return;
+				}
+			}
+			int s = Integer.valueOf((String) table.getValueAt(r, c), 16);
+			if (s < 0 || s > diskImage.getMaxSectors(t)) {
+				return;
+			}
+			selectedTrack = t;
+			selectedSector = s;
+			goBlockButton.setText(t + ":" + s);
+			goBlockButton.setEnabled(true);
+
+		} catch (NumberFormatException ex) {
+			// ignored
 		}
-		int s = Integer.valueOf((String)table.getValueAt(r, c), 16);
-		if (s < 0 || s > diskImage.getMaxSectors(t)) {
-			return;
-		}
-		selectedTrack = t;
-		selectedSector = s;
-		goBlockButton.setText(t + ":" + s);
-		goBlockButton.setEnabled(true);
 	}
 
 	private JPanel createTrackSectorPanel(int track, int sector, final DiskImage diskImage) {

@@ -15,9 +15,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -124,8 +128,7 @@ public class Utility {
 		if (targetFile == null || sourceFile == null) {
 			throw new CbmException(ERR_REQUIRED_DATA_MISSING);
 		}
-		try (FileInputStream input = new FileInputStream(sourceFile);
-				FileOutputStream output = new FileOutputStream(targetFile)) {
+		try (var input = new FileInputStream(sourceFile); var output = new FileOutputStream(targetFile)) {
 			var buffer = new byte[256];
 			int bytesRead;
 			while ((bytesRead = input.read(buffer)) != -1) {
@@ -149,8 +152,7 @@ public class Utility {
 		if (targetFile == null || sourceFile == null) {
 			return false;
 		}
-		try (FileInputStream input = new FileInputStream(sourceFile);
-				FileOutputStream output = new FileOutputStream(targetFile)) {
+		try (var input = new FileInputStream(sourceFile); var output = new FileOutputStream(targetFile)) {
 			var buffer = new byte[256];
 			int bytesRead;
 			while ((bytesRead = input.read(buffer)) != -1) {
@@ -235,7 +237,6 @@ public class Utility {
 	 *             when error
 	 */
 	public static byte[] readFile(File file) throws CbmException {
-		byte[] data = null;
 		try (var input = new FileInputStream(file);
 				var out = new ByteArrayOutputStream()) {
 			var buffer = new byte[65536];
@@ -243,11 +244,10 @@ public class Utility {
 			while ((read = input.read(buffer)) != -1) {
 				out.write(buffer, 0, read);
 			}
-			data = out.toByteArray();
+			return out.toByteArray();
 		} catch (Exception e) {
 			throw new CbmException(ERR_READ_ERROR + e.getMessage(), e);
 		}
-		return data;
 	}
 
 	/**
@@ -895,11 +895,9 @@ public class Utility {
 	}
 
 	public static <T> List<T> cloneList(Collection<T> collection) {
-		ArrayList<T> list = new ArrayList<>();
+		var list = new ArrayList<T>();
 		if (collection != null) {
-			for (T item : collection) {
-				list.add(item);
-			}
+			collection.forEach(list::add);
 		}
 		return list;
 	}
@@ -925,5 +923,23 @@ public class Utility {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Format a Date and into a ISO string
+	 * @param date
+	 * @return the string
+	 */
+	public static String formatAsISO(Date date) {
+		return date.toInstant().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+	}
+
+	/**
+	 * Parse a string with an ISO date into a Date
+	 * @param isoDate
+	 * @return the Date
+	 */
+	public static Date parseISO(String isoDate) {
+		return Date.from( OffsetDateTime.parse (isoDate).toInstant());
 	}
 }

@@ -23,7 +23,7 @@ public class SearchResultTableModel extends AbstractTableModel {
 
 	@Override
 	public int getRowCount() {
-		return 25;
+		return data.size();
 	}
 
 	@Override

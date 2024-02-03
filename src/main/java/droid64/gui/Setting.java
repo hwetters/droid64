@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -63,7 +65,7 @@ public enum Setting {
 	ROW_HEIGHT("row_height",                     ParameterType.INTEGER,          Integer.valueOf(10)),
 	LOCAL_ROW_HEIGHT("local_row_height",         ParameterType.INTEGER,          Integer.valueOf(10)),
 	USE_DB("use_database",                       ParameterType.BOOLEAN,          Boolean.FALSE),
-	LOOK_AND_FEEL("look_and_feel",               ParameterType.INTEGER,          Integer.valueOf(0)),
+	LOOK_AND_FEEL("look_and_feel",               ParameterType.STRING,           "javax.swing.plaf.metal.MetalLookAndFeel"),
 	PLUGIN_COMMAND("plugin_command",             ParameterType.INDEXED_STRING,   Utility.makeList( "d64copy", "x64", "128", "cbmctrl", "xpet", "x64", "x64" )),
 	PLUGIN_ARGUMENTS("plugin_arguments",         ParameterType.INDEXED_STRING,   Utility.makeList( "{Image} 8", Setting.VICE_PLUGIN_ARGS, Setting.VICE_PLUGIN_ARGS, Setting.VICE_PLUGIN_ARGS, "-drive8type {DriveType} -model 8032 {ImageFiles}", "-fs8convertp00 {Files}", "-fs8 {Image}" )),
 	PLUGIN_DESCRIPTION("plugin_description",     ParameterType.INDEXED_STRING,   Utility.makeList( "Transfer this disk image to a real floppy.", "Invoke VICE 64 emulator with this disk image", "Invoke VICE 128 emulator with this disk image", "List files using OpenCBM", "VICE PET emulator", "VICE program", "VICE FS" )),
@@ -77,6 +79,7 @@ public enum Setting {
 	FILE_EXT_D80("file_ext_d80",                 ParameterType.STRING_LIST,      Arrays.asList(".d80".split(Setting.DELIM)) ),
 	FILE_EXT_D82("file_ext_d82",                 ParameterType.STRING_LIST,      Arrays.asList(".d82".split(Setting.DELIM)) ),
 	FILE_EXT_D88("file_ext_d88",                 ParameterType.STRING_LIST,      Arrays.asList(".d88".split(Setting.DELIM)) ),
+	FILE_EXT_D90("file_ext_d90",                 ParameterType.STRING_LIST,      Arrays.asList(".d90".split(Setting.DELIM)) ),
 	FILE_EXT_LNX("file_ext_lnx",                 ParameterType.STRING_LIST,      Arrays.asList(".lnx".split(Setting.DELIM)) ),
 	FILE_EXT_D64_GZ("file_ext_d64_gz",           ParameterType.STRING_LIST,      Arrays.asList(".d64.gz".split(Setting.DELIM)) ),
 	FILE_EXT_D67_GZ("file_ext_d67_gz",           ParameterType.STRING_LIST,      Arrays.asList(".d67.gz".split(Setting.DELIM)) ),
@@ -86,11 +89,12 @@ public enum Setting {
 	FILE_EXT_D80_GZ("file_ext_d80_gz",           ParameterType.STRING_LIST,      Arrays.asList(".d80.gz".split(Setting.DELIM)) ),
 	FILE_EXT_D82_GZ("file_ext_d82_gz",           ParameterType.STRING_LIST,      Arrays.asList(".d82.gz".split(Setting.DELIM)) ),
 	FILE_EXT_D88_GZ("file_ext_d88_gz",           ParameterType.STRING_LIST,      Arrays.asList(".d88.gz".split(Setting.DELIM)) ),
+	FILE_EXT_D90_GZ("file_ext_d90_gz",           ParameterType.STRING_LIST,      Arrays.asList(".d90.gz".split(Setting.DELIM)) ),
 	FILE_EXT_LNX_GZ("file_ext_lnx_gz",           ParameterType.STRING_LIST,      Arrays.asList(".lnx.gz".split(Setting.DELIM)) ),
 	SYS_FONT("sys_font",                         ParameterType.FONT,             new JPanel().getFont()),
 	CONSOLE_FONT("console_font",                 ParameterType.FONT,             new JPanel().getFont()),
 	CBM_FONT("cbm_font",                         ParameterType.FONT,             (Font) null);
-
+	
 	// Setting attributes
 	public final String id;
 	public final ParameterType type;
@@ -110,6 +114,7 @@ public enum Setting {
 	private static final String JDBC_DEFAULT_URL = "jdbc:mysql://localhost:3306/droid64";
 	private static final String JDBC_DEFAULT_PASS = "uridium";
 	private static final String DROID64 = "droid64";
+	public static final String DEFAULT_LOOK_AND_FEEL_CLASS = "javax.swing.plaf.metal.MetalLookAndFeel";
 	/** Default name of settings file (without path). */
 	private static final String DEFAULT_SETTING_FILE_NAME = ".droiD64.cfg";
 	/** Default name of bookmark settings file (without path). */
@@ -149,7 +154,7 @@ public enum Setting {
 		return (Color) get();
 	}
 	public Font getFont() {
-		Object obj = get();
+		var obj = get();
 		if (obj instanceof Font) {
 			return (Font) obj;
 		} else if (type == ParameterType.FONT && defaultValue == null && value == null) {
@@ -159,7 +164,7 @@ public enum Setting {
 		return null;
 	}
 	public File getFile() {
-		Object obj = get();
+		var obj = get();
 		if (obj instanceof String) {
 			return new File((String)obj);
 		} else if (obj instanceof File) {
@@ -178,8 +183,8 @@ public enum Setting {
 	protected void set(Object value) {
 		switch(type) {
 		case STRING_LIST:
-			if (value instanceof List<?>) {
-				this.value = Utility.cloneList((List<?>)value);
+			if (value instanceof Collection<?>) {
+				this.value = Utility.cloneList((Collection<?>)value);
 			} else if (value instanceof String) {
 				this.value = this.parseStringList((String) value);
 			} else if (value instanceof String[]) {
@@ -351,7 +356,7 @@ public enum Setting {
 			if (sa.length >= 3) {
 				return new Font(sa[0].trim(), Integer.parseInt(sa[1].trim()), Integer.parseInt(sa[2].trim()));
 			} else if (new File(string).isFile()) {
-				try (FileInputStream input = new FileInputStream(string)) {
+				try (var input = new FileInputStream(string)) {
 					float size = Optional.ofNullable(FONT_SIZE.getInteger()).orElse(12);
 					return Font.createFont(Font.TRUETYPE_FONT, input).deriveFont(size);
 				} catch (FontFormatException | IOException e) {
@@ -402,12 +407,12 @@ public enum Setting {
 			if (props.containsKey(s.id)) {
 				s.parse(props.get(s.id));
 			} else if (s.type == ParameterType.INDEXED_STRING) {
-				final Map<Integer, String> map = new HashMap<>();
+				final var map = new HashMap<Integer, String>();
 				props.keySet().stream().map(a -> a).filter(a -> a.matches("^" + s.id + "\\.\\d+$"))
 						.map(m -> Integer.valueOf(m.replaceFirst("^" + s.id + "\\.(\\d+)$", "$1")))
 						.forEach(i -> map.put(i, props.get(s.id + DOT + i)));
 				int len = map.keySet().stream().reduce((a, b) -> Math.max(a + 1, b + 1)).orElse(0);
-				List<String> list = new ArrayList<>(Arrays.asList(new String[len]));
+				var list = new ArrayList<String>(Arrays.asList(new String[len]));
 				map.entrySet().stream().forEach(e -> list.set(e.getKey(), e.getValue()));
 				s.set(list);
 			}
@@ -415,7 +420,7 @@ public enum Setting {
 	}
 
 	protected static Map<String, String> loadSettings(InputStreamReader input) throws IOException {
-		try (BufferedReader reader = new BufferedReader(input)) {
+		try (var reader = new BufferedReader(input)) {
 			return reader.lines()
 				.map(String::trim)
 				.filter(s -> !s.startsWith("#") && s.contains("="))
@@ -429,9 +434,9 @@ public enum Setting {
 			output.write("# Configuration file for " + DroiD64.PROGNAME + " v" + DroiD64.VERSION + LF);
 			output.write("# Saved " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(timestamp) + LF);
 			output.write("#" + LF);
-			for (var setting : Arrays.asList(Setting.values()).stream().sorted((a, b) -> a.id.compareTo(b.id)).collect(Collectors.toList())) {
-				output.write(setting.toString());
-			}
+			Arrays.asList(Setting.values()).stream()
+				.sorted(Comparator.comparing(s -> s.id))
+				.forEach(s -> output.write(s.toString()));
 			output.write("# End of file\n");
 	}
 
@@ -445,10 +450,10 @@ public enum Setting {
 		case INDEXED_STRING:
 			var list = (List<String>) value;
 			if (list != null) {
-				StringBuilder buf = new StringBuilder();
+				var buf = new StringBuilder();
 				for (int i=0; i < list.size(); i++) {
 					String v = list.get(i);
-					if (v!=null) {
+					if (v != null) {
 						buf.append(id).append(DOT).append(i).append(EQ).append(v).append(LF);
 					}
 				}
@@ -478,7 +483,7 @@ public enum Setting {
 	}
 
 	public static List<ExternalProgram> getExternalPrograms() {
-		List<ExternalProgram> list = new ArrayList<>();
+		var list = new ArrayList<ExternalProgram>();
 		for (int i=0; i < MAX_PLUGINS; i++) {
 			list.add(getExternalProgram(i));
 		}
@@ -525,7 +530,7 @@ public enum Setting {
 	}
 
 	public static Map<DiskImageType,List<String>> getFileExtensionMap() {
-		EnumMap<DiskImageType,List<String>> map = new EnumMap<>(DiskImageType.class);
+		var map = new EnumMap<DiskImageType,List<String>>(DiskImageType.class);
 		map.put(DiskImageType.D64, Utility.joinLists(FILE_EXT_D64.getList(), FILE_EXT_D64_GZ.getList()));
 		map.put(DiskImageType.D67, Utility.joinLists(FILE_EXT_D67.getList(), FILE_EXT_D67_GZ.getList()));
 		map.put(DiskImageType.D71, Utility.joinLists(FILE_EXT_D71.getList(), FILE_EXT_D71_GZ.getList()));
@@ -533,6 +538,8 @@ public enum Setting {
 		map.put(DiskImageType.D81, Utility.joinLists(FILE_EXT_D81.getList(), FILE_EXT_D81_GZ.getList()));
 		map.put(DiskImageType.D82, Utility.joinLists(FILE_EXT_D82.getList(), FILE_EXT_D82_GZ.getList()));
 		map.put(DiskImageType.D88, Utility.joinLists(FILE_EXT_D88.getList(), FILE_EXT_D88_GZ.getList()));
+		map.put(DiskImageType.D90_9060, Utility.joinLists(FILE_EXT_D90.getList(), FILE_EXT_D90_GZ.getList()));
+		map.put(DiskImageType.D90_9090, Utility.joinLists(FILE_EXT_D90.getList(), FILE_EXT_D90_GZ.getList()));
 		map.put(DiskImageType.LNX, Utility.joinLists(FILE_EXT_LNX.getList(), FILE_EXT_LNX_GZ.getList()));
 		map.put(DiskImageType.T64, Utility.joinLists(FILE_EXT_T64.getList(), FILE_EXT_T64_GZ.getList()));
 		return map;
@@ -543,9 +550,11 @@ public enum Setting {
 			return DiskImageType.UNDEFINED;
 		}
 		final String name = file.getName().toLowerCase();
-		Optional<Entry<DiskImageType, List<String>>> opt = Setting.getFileExtensionMap().entrySet().stream().filter(
-				entry -> entry.getValue().stream().anyMatch(ext -> name.endsWith(ext.toLowerCase()))).findFirst();
-		return opt.isPresent() ? opt.get().getKey() : DiskImageType.UNDEFINED;
+		return Setting.getFileExtensionMap().entrySet().stream()
+				.filter(entry -> entry.getValue().stream().anyMatch(ext -> name.endsWith(ext.toLowerCase())))
+				.findFirst()
+				.map(Entry::getKey)
+				.orElse(DiskImageType.UNDEFINED);
 	}
 
 	public static boolean isImageFileName(File file) {
@@ -596,6 +605,9 @@ public enum Setting {
 			return compressed ? FILE_EXT_D82_GZ.getList() : FILE_EXT_D82.getList();
 		case D88:
 			return compressed ? FILE_EXT_D88_GZ.getList() : FILE_EXT_D88.getList();
+		case D90_9060:
+		case D90_9090:
+			return compressed ? FILE_EXT_D90_GZ.getList() : FILE_EXT_D90.getList();
 		case T64:
 			return compressed ? FILE_EXT_T64_GZ.getList() : FILE_EXT_T64.getList();
 		case LNX:

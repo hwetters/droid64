@@ -38,13 +38,15 @@ public class T64 extends DiskImage {
 	private static final String T64_SIGNATURE = "C64S tape file\r\n";
 	private static final byte SPACE = 0x20;
 
-	public T64(ConsoleStream consoleStream) {
+	public T64(DiskImageType imageFormat, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		initCbmFile(0);
 		bam = new CbmBam(1, 1);
 	}
 
-	public T64(byte[] imageData, ConsoleStream consoleStream) {
+	public T64(DiskImageType imageFormat, byte[] imageData, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		cbmDisk = imageData;
 		int entryCapacity = Utility.getInt16(cbmDisk, 0x22);
@@ -105,10 +107,10 @@ public class T64 extends DiskImage {
 				cf.setFileClosed(true);
 				cf.setFileLocked(false);
 				cf.setLoadAddr(loadStartAddr);
-				cbmFile[i] = cf;
+				setCbmFile(i, cf);
 				filesUsedCount++;
 			} else {
-				cbmFile[i].setFileType(FileType.DEL);
+				getCbmFile(i).setFileType(FileType.DEL);
 			}
 		}
 	}
@@ -120,8 +122,8 @@ public class T64 extends DiskImage {
 
 	@Override
 	public byte[] getFileData(int number) throws CbmException {
-		if (number < cbmFile.length && number >= 0) {
-			CbmFile cf = cbmFile[number];
+		if (number < getCbmFileSize() && number >= 0) {
+			var cf = getCbmFile(number);
 			if (cf.getFileType() == FileType.DEL) {
 				feedbackStream.append("getFileData ["+number+"]: No data!\n");
 				return null;
@@ -197,7 +199,7 @@ public class T64 extends DiskImage {
 			feedbackStream.append("deleteFile [").append(num).append("]: ").append(cf.getName()).append('\n');
 			filesUsedCount = filesUsedCount > 0 ? filesUsedCount - 1 : 0;
 			cbmDisk[pos] = 0;
-			cbmFile[num].setFileType(FileType.DEL);
+			getCbmFile(num).setFileType(FileType.DEL);
 		} else {
 			feedbackStream.append("deleteFile [").append(num).append("]: already deleted. ").append(cf.getName()).append('\n');
 		}

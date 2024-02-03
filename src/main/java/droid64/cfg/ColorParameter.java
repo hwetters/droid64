@@ -5,7 +5,10 @@ import java.util.Optional;
 
 public class ColorParameter extends Parameter<Color>{
 
-
+	/** Constructor
+	 *
+	 * @param name
+	 */
 	public ColorParameter(String name) {
 		super(name, ParameterType.COLOR);
 	}
@@ -35,7 +38,9 @@ public class ColorParameter extends Parameter<Color>{
 
 	@Override
 	public String toString() {
-		return getName() + "=" + Optional.ofNullable(getValue()).map( c -> c.getRed() + TUPEL_DELIM + c.getGreen() + TUPEL_DELIM + c.getBlue()).orElse("");
+		return getName() + "=" + Optional.ofNullable(getValue())
+		.map( c -> c.getRed() + TUPEL_DELIM + c.getGreen() + TUPEL_DELIM + c.getBlue())
+		.orElse("");
 	}
 
 }

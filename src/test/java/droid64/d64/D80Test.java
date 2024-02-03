@@ -16,7 +16,7 @@ public class D80Test extends DiskImageBaseTest {
 	@Test
 	public void testToString() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new D80(consoleStream).toString().isEmpty());
+		Assert.assertFalse(new D80(DiskImageType.D80, consoleStream).toString().isEmpty());
 	}
 
 	@Override
@@ -24,8 +24,8 @@ public class D80Test extends DiskImageBaseTest {
 	public void testBlankNewImage() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d80");
-		D80 d80 = new D80(consoleStream);
-		new D80(d80.cbmDisk, consoleStream);
+		D80 d80 = new D80(DiskImageType.D80, consoleStream);
+		new D80(DiskImageType.D80, d80.cbmDisk, consoleStream);
 		Assert.assertTrue(d80.equals(d80));
 		Assert.assertTrue("Create D80 image ", d80.saveNewImage(imgFile, "D80 UNIT TEST", "00D80"));
 		d80.readDirectory();
@@ -48,7 +48,7 @@ public class D80Test extends DiskImageBaseTest {
 	public void testImportExportSizes() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d80");
-		D80 img = new D80(consoleStream);
+		D80 img = new D80(DiskImageType.D80, consoleStream);
 		Assert.assertTrue("Create D80 image ", img.saveNewImage(imgFile, "D80 UNIT TEST", "00D80"));
 		for (int i = 0; i < TEST_FILE_SIZE_MAX; i++) {
 			importExportFile(img, 1, i, true);
@@ -60,7 +60,7 @@ public class D80Test extends DiskImageBaseTest {
 	public void testImportExportNumFiles() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d80");
-		D80 img = new D80(consoleStream);
+		D80 img = new D80(DiskImageType.D80, consoleStream);
 		Assert.assertTrue("Create D80 image ", img.saveNewImage(imgFile, "D80 UNIT TEST", "00D80"));
 		importExportNumfiles(img, imgFile, D80.FILE_NUMBER_LIMIT, 2052);
 	}
@@ -68,7 +68,7 @@ public class D80Test extends DiskImageBaseTest {
 	@Test
 	public void testTrackOffsetTable() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D80 img = new D80(consoleStream);
+		D80 img = new D80(DiskImageType.D80, consoleStream);
 		int secIn = 0;
 		int offset = 0;
 		for (int trk = img.getFirstTrack(); trk < img.getTrackCount()+img.getFirstTrack(); trk++) {

@@ -12,8 +12,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import droid64.db.Bookmark;
-import droid64.db.Bookmark.BookmarkType;
+import droid64.cfg.Bookmark;
+import droid64.cfg.BookmarkType;
 
 public class BookmarkTreeTest {
 
@@ -21,22 +21,22 @@ public class BookmarkTreeTest {
 
 	@Test
 	public void test() throws IOException {
-		File tmp =  getTempFile("_book.xml", true);
+		var tmp =  getTempFile("_book.xml", true);
 		Files.copy(BOOKMARK_FILE.toPath(), tmp.toPath(),  StandardCopyOption.REPLACE_EXISTING);
 		var consoleStream = new ConsoleStream(new JTextArea());
 
-		BookmarkTree bt = new BookmarkTree(new MainPanel(new JFrame()), consoleStream);
+		var bt = new BookmarkTree(new MainPanel(new JFrame()), consoleStream);
 		bt.load(new File("/tmp/doid64/test/missing_bookmark_file.xml"));
 		Assert.assertEquals("menuitems.size 0", 0, bt.getMenuItems().size());
 		bt.load(tmp);
 		Assert.assertEquals("menuitems.size 1", 6, bt.getMenuItems().size());
 
-		Bookmark b1 = new Bookmark();
+		var b1 = new Bookmark();
 		b1.setBookmarkType(BookmarkType.DIRECTORY);
 		bt.addEntry(b1, null);
 		Assert.assertEquals("menuitems.size 2", 7, bt.getMenuItems().size());
 
-		Bookmark b2 = new Bookmark();
+		var b2 = new Bookmark();
 		b2.setBookmarkType(BookmarkType.DIRECTORY);
 		bt.addEntry(b2, (DefaultMutableTreeNode) bt.getModel().getRoot());
 		Assert.assertEquals("menuitems.size 3", 8, bt.getMenuItems().size());
@@ -44,7 +44,7 @@ public class BookmarkTreeTest {
 
 
 	private File getTempFile(String suffix, boolean deleteOnExit) throws IOException {
-		File tmpFile = File.createTempFile("UnitTest_", suffix);
+		var tmpFile = File.createTempFile("UnitTest_", suffix);
 		if (deleteOnExit) {
 			tmpFile.deleteOnExit();
 		}

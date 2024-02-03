@@ -118,7 +118,7 @@ public class OldParameter {
 	}
 
 	public void setStringListParam(String value) {
-		List<String> list = new ArrayList<>();
+		var list = new ArrayList<String>();
 		setStringListValue(list);
 		if (value != null) {
 			for (String str : Arrays.asList(value.replaceAll("[\\r\\n]+$", Utility.EMPTY).split(STRING_LIST_SPLIT_EXPR))) {
@@ -157,7 +157,7 @@ public class OldParameter {
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
+		var buf = new StringBuilder();
 		buf.append("Parameter[");
 		buf.append(" .name=").append(name);
 		buf.append(" .type=").append(type);
@@ -328,7 +328,7 @@ public class OldParameter {
 	}
 
 	public static String getFontAsDisplayString(Font font) {
-		StringBuilder buf = new StringBuilder();
+		var buf = new StringBuilder();
 		if (font != null) {
 			buf.append(font.getName()).append('-');
 			buf.append((font.getStyle() == Font.PLAIN) ? "Plain" : Utility.EMPTY);

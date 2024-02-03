@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import droid64.d64.CbmException;
 import droid64.d64.D64;
+import droid64.d64.DiskImageType;
 
 public class HexViewPanelTest {
 
@@ -13,7 +14,7 @@ public class HexViewPanelTest {
 	public void test() throws CbmException {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		new HexViewPanel("top", null, "filename", new byte[] {1,2,3,4}, 4, false);
-		new HexViewPanel ("top", null, 1, 1, new D64(new byte[174848], consoleStream));
+		new HexViewPanel ("top", null, 1, 1, new D64(DiskImageType.D64, new byte[174848], consoleStream));
 	}
 
 }

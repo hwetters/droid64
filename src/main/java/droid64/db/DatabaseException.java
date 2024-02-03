@@ -22,10 +22,8 @@ public class DatabaseException extends Exception {
 
 	@Override
 	public String toString() {
-		var buf = new StringBuilder();
-		buf.append("DatabaseException[");
-		buf.append(" .message=").append(getMessage());
-		buf.append(']');
-		return buf.toString();
+		return new StringBuilder()
+				.append("DatabaseException[")
+				.append(" .message=").append(getMessage()).append(']').toString();
 	}
 }

@@ -6,11 +6,7 @@ import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import java.util.function.Consumer;
 
 import droid64.d64.DiskImage;
 import droid64.d64.DiskImageType;
@@ -40,10 +36,8 @@ import droid64.d64.Utility;
  *   </pre>
  * @author wolf
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ExternalProgram", propOrder = { "command", "arguments", "description", "label", "forkThread", "extArguments" })
 public class ExternalProgram {
-
+	
 	/** The disk image file name including path */
     private static final String IMAGE      = "{Image}";
     /** The selected files */
@@ -61,17 +55,11 @@ public class ExternalProgram {
     /** Extra arguments */
     private static final String EXT_ARGUMENTS  = "{ExtArguments}";
 
-	@XmlElement(required = false)
 	private String command;
-	@XmlElement(required = false)
 	private String arguments;
-	@XmlElement(required = false)
 	private String description;
-	@XmlElement(required = false)
 	private String label;
-	@XmlElement(required = false)
 	private boolean forkThread;
-	@XmlElement(required = false)
 	private String extArguments;
 
 	/**
@@ -105,10 +93,10 @@ public class ExternalProgram {
 		var files = new ArrayList<String>();
 		var imagefiles = new ArrayList<String>();
 		if (sourceFiles != null && !sourceFiles.isEmpty()) {
-			sourceFiles.stream().filter(s -> s!= null && !s.isEmpty()).forEach(fName-> {
+			sourceFiles.stream().filter(s -> s!= null && !s.isEmpty()).forEach(fName -> {
 				files.add(fName);
-				if (sourceImage != null && sourceImage.exists()) {
-					imagefiles.add(sourceImage.getPath() + ":" + fName);
+				if (sourceImage != null && sourceImage.exists() && imageType != DiskImageType.UNDEFINED) {
+						imagefiles.add(sourceImage.getPath() + ":" + fName);	
 				}
 			});
 		}
@@ -136,7 +124,7 @@ public class ExternalProgram {
 			case IMAGEFILES:
 				if (!imagefiles.isEmpty()) {
 					args.addAll(imagefiles);
-				} else if (sourceImage != null && sourceImage.exists()) {
+				} else if (sourceImage != null && sourceImage.exists() && sourceImage.isFile()) {
 					args.add(sourceImage.getPath());
 				}
 				break;
@@ -202,10 +190,22 @@ public class ExternalProgram {
 		}
 	}
 
-	private void runProgramThread(File imgParentFile, List<String> execArgs, MainPanel mainPanel) {
+	private static int runProgramThread(File folder, List<String> execArgs, MainPanel mainPanel) {
+		return runProgramThread(folder, execArgs, mainPanel::appendConsole, mainPanel::appendConsole);
+	}
+
+	/**
+	 * @param folder the current folder for the command
+	 * @param execArgs the command and its arguments
+	 * @param outputConsumer consumer of the output
+	 * @param errorConsumer the receiver of error printouts
+	 * @return return code. Normally 0 means success.
+	 */
+	public static int runProgramThread(File folder, List<String> execArgs, Consumer<String> outputConsumer, Consumer<String> errorConsumer) {
+		int returnCode=1;
 		try {
 			var process = new ProcessBuilder()
-					.directory(imgParentFile != null ? imgParentFile : new File("."))
+					.directory(folder != null ? folder : new File("."))
 					.redirectOutput(Redirect.PIPE)
 					.redirectErrorStream(true)
 					.command(execArgs)
@@ -213,13 +213,14 @@ public class ExternalProgram {
 			try (var br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 				String line;
 				while ((line = br.readLine()) != null) {
-					mainPanel.appendConsole(line);
+					outputConsumer.accept(line);
 				}
-				process.waitFor();
+				returnCode = process.waitFor();
 			}
 		} catch (Exception e) {	//NOSONAR
-			mainPanel.appendConsole('\n'+e.getMessage());
+			errorConsumer.accept('\n'+e.getMessage());
 		}
+		return returnCode;
 	}
 
 	@Override

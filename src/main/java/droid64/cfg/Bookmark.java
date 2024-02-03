@@ -1,55 +1,34 @@
-package droid64.db;
+package droid64.cfg;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.stream.Collectors;
 
 import droid64.d64.DiskImageType;
 import droid64.d64.Utility;
+import droid64.db.Value;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Bookmark", propOrder = { "name", "path", "created", "bookmarkType", "childs", "selectedNo", "pluginNo", "diskImageType", "extArguments", "notes", "zipped" })
+/**
+ * Bookmark
+ */
 public class Bookmark extends Value implements Serializable {
 	private static final long serialVersionUID = -1L;
-
+	
+	/** Bookmark separator label */
 	public static final String SEPARATOR_STRING = Utility.repeat("\u2015", 16);
 
-	@XmlElement(required = true)
 	private String name;
-	@XmlElement(required = true)
 	private String path;
-	@XmlElement(required = true, type = String.class)
-	@XmlJavaTypeAdapter(DateAdapter.class)
-	@XmlSchemaType(name = "created")
 	private Date created;
-	@XmlElement(required = true)
-	BookmarkType bookmarkType;
-	@XmlElementWrapper(name="childs", required = false)
-	@XmlElement(name = "Bookmark")
+	private BookmarkType bookmarkType;
 	private List<Bookmark> childs;
-	@XmlElement(required = false, defaultValue = "-1")
 	private int selectedNo = -1;
-	@XmlElement(required = false, defaultValue = "-1")
 	private int pluginNo = -1;
-	@XmlElement(required = false)
 	private DiskImageType diskImageType;
-	@XmlElement(required = false)
 	private String extArguments;
-	@XmlElement(required = false)
 	private String notes;
-	@XmlElement(required = false, defaultValue = "false")
 	private boolean zipped;
 
 	public String getName() {
@@ -144,36 +123,46 @@ public class Bookmark extends Value implements Serializable {
 		return bookmarkType == BookmarkType.SEPARATOR ? SEPARATOR_STRING : name;
 	}
 
-	@XmlType(name = "BookmarkType")
-	@XmlEnum
-	public enum BookmarkType {
-		@XmlEnumValue("ROOT")
-		ROOT(1),
-		@XmlEnumValue("DIRECTORY")
-		DIRECTORY(2),
-		@XmlEnumValue("DISKIMAGE")
-		DISKIMAGE(3),
-		@XmlEnumValue("SEPARATOR")
-		SEPARATOR(4),
-		@XmlEnumValue("FOLDER")
-		FOLDER(5);
+	/**
+	 * @return the Bookmark as a XML string
+	 */
+	public String toXML() {
 
-		public final int type;
+		var b = new StringBuilder();
 
-		private BookmarkType(int type) {
-			this.type = type;
+		b.append(TagName.BOOKMARK.start());
+		if (name != null && !name.isEmpty()) {
+			b.append(TagName.NAME.format(name));
+		}
+		if (path != null && !path.isEmpty()) {
+			b.append(TagName.PATH.format(path));
+		}
+		if (notes != null && !notes.isEmpty()) {
+			b.append(TagName.NOTES.format(notes));
+		}
+		if (extArguments != null && !extArguments.isEmpty()) {
+			b.append(TagName.EXT_ARGUMENTS.format(extArguments));
+		}
+		if (created != null) {
+			b.append(TagName.CREATED.format(Utility.formatAsISO(created)));
+		}
+		if (bookmarkType != null) {
+			b.append(TagName.BOOKMARK_TYPE.format(String.valueOf(bookmarkType)));
+		}
+		if (diskImageType != null) {
+			b.append(TagName.DISK_IMAGE_TYPE.format(String.valueOf(diskImageType)));
+		}
+		if (selectedNo >= 0) {
+			b.append(TagName.SELECTED_NO.format(String.valueOf(selectedNo)));
+		}
+		if (pluginNo >= 0) {
+			b.append(TagName.PLUGIN_NO.format(String.valueOf(pluginNo)));
 		}
 
-		public static String[] getNames() {
-			var values = values();
-			var names = new String[values.length];
-			for (int i=0; i < values.length; i++) {
-				names[i] = values[i].name();
-			}
-			return names;
-		}
-		public static Stream<BookmarkType> stream() {
-			return Stream.of(values());
-		}
+		b.append(TagName.ZIPPED.format(String.valueOf(zipped)));
+		b.append(getChilds().stream().map(Bookmark::toXML).collect(Collectors.joining()));
+		b.append(TagName.BOOKMARK.end()).append('\n');
+
+		return b.toString();
 	}
 }

@@ -80,12 +80,11 @@ public class CbmTrack {
 
 	@Override
 	public String toString() {
-		var builder = new StringBuilder();
-		builder.append("CbmTrack[");
-		builder.append(" sectors=").append(sectors);
-		builder.append(" sectorsIn=").append(sectorsIn);
-		builder.append(" offset=").append(offset);
-		builder.append(']');
-		return builder.toString();
+		return new StringBuilder()
+		.append("CbmTrack[")
+		.append(" sectors=").append(sectors)
+		.append(" sectorsIn=").append(sectorsIn)
+		.append(" offset=").append(offset)
+		.append(']').toString();
 	}
 }

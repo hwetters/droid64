@@ -72,7 +72,7 @@ public class CbmPicture {
 	 * @throws IOException when error
 	 */
 	public BufferedImage getImage() throws IOException {
-		BufferedImage image;
+		final BufferedImage image;
 		if (isGif(data) || isJpeg(data) || isPng(data)) {
 			InputStream in = new ByteArrayInputStream(data);
 			image = ImageIO.read(in);
@@ -144,7 +144,7 @@ public class CbmPicture {
 	 * @return image data
 	 */
 	private byte[] decompress(byte[] inData) {
-		var outData = new byte[KOALA_SIZE];
+		final var outData = new byte[KOALA_SIZE];
 		int in = 0;
 		int out = 0;
 		while (in < inData.length && out < outData.length) {

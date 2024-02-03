@@ -97,18 +97,17 @@ public class DiskSearchCriteria {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("DiskSearchCriteria[");
-		builder.append(" .diskLabel=").append(diskLabel);
-		builder.append(" .diskPath=").append(diskPath);
-		builder.append(" .diskFileName=").append(diskFileName);
-		builder.append(" .fileName=").append(fileName);
-		builder.append(" .fileSizeMin=").append(fileSizeMin);
-		builder.append(" .fileSizeMax=").append(fileSizeMax);
-		builder.append(" .imageType=").append(imageType);
-		builder.append(" .hostName=").append(hostName);
-		builder.append(" .fileType=").append(fileType).append(']');
-		return builder.toString();
+		return new StringBuilder()
+		.append("DiskSearchCriteria[")
+		.append(" .diskLabel=").append(diskLabel)
+		.append(" .diskPath=").append(diskPath)
+		.append(" .diskFileName=").append(diskFileName)
+		.append(" .fileName=").append(fileName)
+		.append(" .fileSizeMin=").append(fileSizeMin)
+		.append(" .fileSizeMax=").append(fileSizeMax)
+		.append(" .imageType=").append(imageType)
+		.append(" .hostName=").append(hostName)
+		.append(" .fileType=").append(fileType).append(']')
+		.toString();
 	}
-
 }

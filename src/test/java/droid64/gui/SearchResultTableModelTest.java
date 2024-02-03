@@ -12,7 +12,7 @@ public class SearchResultTableModelTest {
 		SearchResultTableModel model = new SearchResultTableModel();
 		model.updateDirEntry(new SearchResultRow("path1", "disk1", "label1", "file1", "type1", 101, "host1"));
 		model.updateDirEntry(new SearchResultRow("path2", "disk2", "label2", "file2", "type2", 102, "host2"));
-		Assert.assertEquals("",25, model.getRowCount());
+		Assert.assertEquals("",2, model.getRowCount());
 		Assert.assertEquals("",7, model.getColumnCount());
 		Assert.assertEquals("","path2", model.getValueAt(1, 0));
 		model.getValueAt(1, 1);

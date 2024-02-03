@@ -2,7 +2,9 @@ package droid64.d64;
 
 import java.io.Serializable;
 import java.util.Arrays;
-/**<pre style='font-family:sans-serif;'>
+
+/**
+ * <pre style='font-family:sans-serif;'>
  * Created on 21.06.2004
  *
  *   droiD64 - A graphical file manager for D64 files
@@ -24,7 +26,8 @@ import java.util.Arrays;
  *
  *   eMail: wolfvoz@users.sourceforge.net
  *   http://droid64.sourceforge.net
- *</pre>
+ * </pre>
+ *
  * @author wolf
  */
 public class CbmBam implements Serializable {
@@ -33,12 +36,12 @@ public class CbmBam implements Serializable {
 	private int diskDosType;
 	private final int[] freeSectors;
 	private final int[][] trackBits;
-	private String diskName;	//string[16]
-	private String diskId;	//string[5]
+	private String diskName; // string[16]
+	private String diskId; // string[5]
 
 	public CbmBam(int numTracks, int numTrackBytes) {
 		freeSectors = new int[numTracks];
-		trackBits =  new int[numTracks][numTrackBytes - 1];
+		trackBits = new int[numTracks][numTrackBytes - 1];
 	}
 
 	/**
@@ -67,16 +70,16 @@ public class CbmBam implements Serializable {
 	 * @return number of free sectors
 	 */
 	public int getFreeSectors(int trackNumber) {
-		return freeSectors[trackNumber-1];
+		return freeSectors[trackNumber - 1];
 	}
 
 	/**
 	 * @param trackNumber the track number (1..LastTrack)
-	 * @param byteNumber the byte number (1..3)
+	 * @param byteNumber  the byte number (1..3)
 	 * @return track bits
 	 */
 	public int getTrackBits(int trackNumber, int byteNumber) {
-		return trackBits[trackNumber-1][byteNumber-1];
+		return trackBits[trackNumber - 1][byteNumber - 1];
 	}
 
 	/**
@@ -105,23 +108,23 @@ public class CbmBam implements Serializable {
 	 * @param value value
 	 */
 	public void setFreeSectors(int track, int value) {
-		freeSectors[track-1] = value;
+		freeSectors[track - 1] = value;
 	}
 
 	/**
-	 * @param track track which is a number between 1 and last track.
+	 * @param track   track which is a number between 1 and last track.
 	 * @param byteNum a number starting 1 and is the number of bytes per track.
-	 * @param value value
+	 * @param value   value
 	 */
 	public void setTrackBits(int track, int byteNum, int value) {
-		trackBits[track-1][byteNum-1] = value;
+		trackBits[track - 1][byteNum - 1] = value;
 	}
 
 	/**
 	 * @return hexdump of all BAM entries and the free sectors
 	 */
 	public String dump() {
-		StringBuilder b = new StringBuilder();
+		var b = new StringBuilder();
 		if (trackBits != null && trackBits.length > 0) {
 			for (int t = 0; t < trackBits.length; t++) {
 				b.append('[').append(t).append("]\t");
@@ -138,14 +141,9 @@ public class CbmBam implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("CbmBam [");
-		builder.append(" diskDosType=").append(diskDosType);
-		builder.append(" freeSectors=").append(Arrays.toString(freeSectors));
-		builder.append(" trackBits=").append(Arrays.toString(trackBits));
-		builder.append(" diskName=").append(diskName);
-		builder.append(" diskId=").append(diskId);
-		builder.append(']');
-		return builder.toString();
+		return new StringBuilder().append("CbmBam [").append(" diskDosType=").append(diskDosType)
+				.append(" freeSectors=").append(Arrays.toString(freeSectors)).append(" trackBits=")
+				.append(Arrays.toString(trackBits)).append(" diskName=").append(diskName).append(" diskId=")
+				.append(diskId).append(']').toString();
 	}
 }

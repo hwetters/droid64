@@ -50,7 +50,7 @@ public class DirEntry implements Serializable {
 	public DirEntry(CbmFile file, int fileNum) {
 		number = fileNum;
 		if (file instanceof CpmFile) {
-			CpmFile cpm = (CpmFile) file;
+			var cpm = (CpmFile) file;
 			blocks = cpm.getRecordCount();
 			name = cpm.getCpmName();
 			type = cpm.getCpmNameExt();

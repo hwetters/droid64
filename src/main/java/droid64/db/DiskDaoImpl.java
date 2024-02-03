@@ -41,52 +41,40 @@ public class DiskDaoImpl implements DiskDao {
 	@Override
 	public Disk getDisk(long diskId) throws DatabaseException {
 		String sql = SELECT + COLUMN_NAMES + " FROM disk WHERE diskid=?";
-		ResultSet rs = null;
 		try (var stmt = DaoFactoryImpl.prepareStatement(sql)){
 			stmt.setLong(1, diskId);
-			rs = stmt.executeQuery();
-			if (rs.next()) {
-				return consumeRow(rs, false);
-			} else {
-				throw new NotFoundException("No such diskId ("+diskId+").");
+			try (var rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return consumeRow(rs, false);
+				} else {
+					throw new NotFoundException("No such diskId ("+diskId+").");
+				}
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {/* ignore */}
-			}
 		}
 	}
 
 	@Override
 	public Disk getDiskByFileName(String fileName) throws DatabaseException {
 		String sql = SELECT + COLUMN_NAMES + " FROM disk WHERE filepath=? AND filename=?";
-		File f = new File(fileName);
-		File p = f.getAbsoluteFile().getParentFile();
+		var f = new File(fileName);
+		var p = f.getAbsoluteFile().getParentFile();
 		String path = p != null ? p.getAbsolutePath() : null;
 		String file = f.getName();
-		ResultSet rs = null;
 		try (var stmt = DaoFactoryImpl.prepareStatement(sql)) {
 			stmt.setString(1, path);
 			stmt.setString(2, file);
 
-			rs = stmt.executeQuery();
-			if (rs.next()) {
-				return consumeRow(rs, false);
-			} else {
-				throw new NotFoundException("No such disk ("+fileName+").");
+			try (var rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return consumeRow(rs, false);
+				} else {
+					throw new NotFoundException("No such disk ("+fileName+").");
+				}
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {/* ignore */}
-			}
 		}
 	}
 
@@ -157,22 +145,16 @@ public class DiskDaoImpl implements DiskDao {
 			sqlBuf.append("FETCH FIRST ? ROWS ONLY");
 		}
 		String sql = sqlBuf.toString();
-		ResultSet rs = null;
 		try (var stmt = DaoFactoryImpl.prepareStatement(sql)) {
 			setSearchCriterias(stmt, criteria);
-			rs = stmt.executeQuery();
-			while (rs.next()) {
-				builder.add(consumeDiskComposite(rs));
+			try (var rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					builder.add(consumeDiskComposite(rs));
+				}
 			}
 			return builder.build();
 		}  catch (SQLException e) {
 			throw new DatabaseException(e);
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {/* ignore */}
-			}
 		}
 	}
 
@@ -292,54 +274,48 @@ public class DiskDaoImpl implements DiskDao {
 				"LEFT JOIN diskfile df ON df.diskid = d.diskid " +
 				"WHERE d.filePath = ? AND d.filename = ? AND (UPPER(hostname) = ? OR hostname IS NULL)" +
 				"ORDER BY d.filepath, d.filename, df.fileNum;\n ";
-		ResultSet rs = null;
 		try (var stmt = DaoFactoryImpl.prepareStatement(sql)) {
 			int idx = 1;
 			stmt.setString(idx++, disk.getFilePath());
 			stmt.setString(idx++, disk.getFileName());
 			stmt.setString(idx, disk.getHostName() != null ? disk.getHostName().toUpperCase() : Utility.EMPTY);
-			rs = stmt.executeQuery();
-			Disk oldDisk = null;
-			while (rs.next()) {
-				oldDisk = consumeSaveRs(rs, oldDisk);
-			}
-			if (oldDisk != null) {
-				disk.setDiskId(oldDisk.getDiskId());
-				disk.setUpdate();
-				int longestList = disk.getDiskFiles().size() > oldDisk.getDiskFiles().size() ? disk.getDiskFiles().size() : oldDisk.getDiskFiles().size();
-				int newFileCount = disk.getDiskFiles().size();
-				int oldfileCount = oldDisk.getDiskFiles().size();
-				for (int i = 0; i < longestList; i++) {
-					if (i < newFileCount && i < oldfileCount) {
-						DiskFile newFile = disk.getDiskFiles().get(i);
-						DiskFile oldFile = oldDisk.getDiskFiles().get(i);
-						newFile.setDiskId(disk.getDiskId());
-						newFile.setFileId(oldFile.getFileId());
-						newFile.setUpdate();
-					} else if (i >= newFileCount) {
-						DiskFile oldFile = oldDisk.getDiskFiles().get(i);
-						oldFile.setDelete();
-						disk.getDiskFiles().add(oldFile);
-					} else {
-						disk.getDiskFiles().get(i).setDelete();
-						disk.getDiskFiles().get(i).setDiskId(disk.getDiskId());
-					}
+			try (var rs = stmt.executeQuery()) {
+				Disk oldDisk = null;
+				while (rs.next()) {
+					oldDisk = consumeSaveRs(rs, oldDisk);
 				}
-			} else {
-				disk.setInsert();
-				for (DiskFile newFile : disk.getDiskFiles()) {
-					newFile.setInsert();
+				if (oldDisk != null) {
+					disk.setDiskId(oldDisk.getDiskId());
+					disk.setUpdate();
+					int longestList = disk.getDiskFiles().size() > oldDisk.getDiskFiles().size() ? disk.getDiskFiles().size() : oldDisk.getDiskFiles().size();
+					int newFileCount = disk.getDiskFiles().size();
+					int oldfileCount = oldDisk.getDiskFiles().size();
+					for (int i = 0; i < longestList; i++) {
+						if (i < newFileCount && i < oldfileCount) {
+							DiskFile newFile = disk.getDiskFiles().get(i);
+							DiskFile oldFile = oldDisk.getDiskFiles().get(i);
+							newFile.setDiskId(disk.getDiskId());
+							newFile.setFileId(oldFile.getFileId());
+							newFile.setUpdate();
+						} else if (i >= newFileCount) {
+							DiskFile oldFile = oldDisk.getDiskFiles().get(i);
+							oldFile.setDelete();
+							disk.getDiskFiles().add(oldFile);
+						} else {
+							disk.getDiskFiles().get(i).setDelete();
+							disk.getDiskFiles().get(i).setDiskId(disk.getDiskId());
+						}
+					}
+				} else {
+					disk.setInsert();
+					for (DiskFile newFile : disk.getDiskFiles()) {
+						newFile.setInsert();
+					}
 				}
 			}
 			performSave(disk);
 		}  catch (SQLException e) {
 			throw new DatabaseException(e);
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {/* ignore */}
-			}
 		}
 	}
 
@@ -361,7 +337,7 @@ public class DiskDaoImpl implements DiskDao {
 		}
 		long fileId = rs.getLong(5);
 		if (fileId != 0L) {
-			DiskFile oldFile = new DiskFile();
+			var oldFile = new DiskFile();
 			oldFile.setClean();
 			oldFile.setFileId(fileId);
 			oldFile.setDiskId(rs.getLong(1));
@@ -592,7 +568,7 @@ public class DiskDaoImpl implements DiskDao {
 		try (var stmt = DaoFactoryImpl.prepareStatement(sql)) {
 			stmt.setLong(1, disk.getDiskId());
 			try (ResultSet rs = stmt.executeQuery()) {
-				List<DiskFile> list = new ArrayList<>();
+				var list = new ArrayList<DiskFile>();
 				while (rs.next()) {
 					list.add(consumeFileRow(rs));
 				}

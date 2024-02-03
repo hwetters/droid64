@@ -1,25 +1,27 @@
 package droid64.d64;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+public class TrackSector implements Comparable<TrackSector> {
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "TrackSector", propOrder = {
-	"track",
-	"sector"
-    })
-public class TrackSector {
-
-	@XmlElement(required = true)
 	int track;
-	@XmlElement(required = true)
 	int sector;
 
+	/** Constructor
+	 *
+	 * @param track
+	 * @param sector
+	 */
 	public TrackSector(int track, int sector) {
 		this.track = track;
 		this.sector = sector;
+	}
+
+	/** Constructor
+	 *
+	 * @param trackSector to be cloned
+	 */
+	public TrackSector(TrackSector that) {
+		this.track = that.track;
+		this.sector = that.sector;
 	}
 
 	public int getTrack() {
@@ -65,5 +67,16 @@ public class TrackSector {
 		result = 31 * result + sector;
 		result = 31 * result + track;
 		return result;
+	}
+
+	@Override
+	public int compareTo(TrackSector other) {
+		if (equals(other)) {
+			return 0;
+		}
+		if (this.track == other.track) {
+			return Integer.compare(this.sector, other.sector);
+		}
+		return Integer.compare(this.track, other.track);
 	}
 }

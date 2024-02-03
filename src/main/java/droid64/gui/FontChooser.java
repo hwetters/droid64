@@ -31,7 +31,7 @@ public class FontChooser extends JPanel {
 	/** Preview text string */
 	private static final String PREVIEW_TEXT = "The quick brown fox jumps over the lazy dog.";
 	/** List of font sizes */
-	private static final Integer[] FONT_SIZES = { 8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 40, 48, 60, 72 };
+	private static final Integer[] FONT_SIZES = { 8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 40, 48, 60, 72, 80, 88, 96, 112 };
 	/** Index of default font size */
 	private static final int DEFAULT_SIZE_INDEX = 4;
 	/** Selected font */

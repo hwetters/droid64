@@ -144,7 +144,7 @@ public class RenameDiskImagePanel extends JPanel {
 
 		cpmBox.setToolTipText("Format for CP/M.");
 
-		final JTextField nameTextField2 = new JTextField(Utility.EMPTY, 16);
+		final var nameTextField2 = new JTextField(Utility.EMPTY, 16);
 		nameTextField2.setBackground(Setting.DIR_BG.getColor());
 		nameTextField2.setForeground(Setting.DIR_FG.getColor());
 		nameTextField2.setEditable(false);
@@ -153,7 +153,7 @@ public class RenameDiskImagePanel extends JPanel {
 				BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 		nameTextField.getDocument().addDocumentListener(new MyDocumentListener(nameTextField2));
 
-		final JTextField idTextField2 = new JTextField(Utility.EMPTY, 5);
+		final var idTextField2 = new JTextField(Utility.EMPTY, 5);
 		idTextField2.setBackground(Setting.DIR_BG.getColor());
 		idTextField2.setForeground(Setting.DIR_FG.getColor());
 		idTextField2.setEditable(false);
@@ -168,11 +168,11 @@ public class RenameDiskImagePanel extends JPanel {
 
 		setLayout(new GridBagLayout());
 
-		GridBagConstraints gbc = new GridBagConstraints();
+		var gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.WEST;
 		int row = 0;
-		JPanel createPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		var createPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		createPanel.add(compressedBox);
 		createPanel.add(cpmBox);
 

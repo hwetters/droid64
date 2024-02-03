@@ -50,6 +50,14 @@ public class ValidationError implements Serializable {
 			return new ValidationError(track, sector, this);
 		}
 
+		public ValidationError getError(TrackSector block) {
+			return getError(block.track, block.sector);
+		}
+
+		public ValidationError getError(TrackSector block, String fileName) {
+			return getError(block.track, block.sector, fileName);
+		}
+
 		public ValidationError getError(int track, int sector, String fileName) {
 			return new ValidationError(track, sector, this, fileName);
 		}
@@ -92,14 +100,13 @@ public class ValidationError implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("ValidationError[");
-		buf.append(" .track=").append(track);
-		buf.append(" .sector=").append(sector);
-		buf.append(" .error=").append(error);
-		buf.append(" .fileName=").append(fileName);
-		buf.append(']');
-		return buf.toString();
+		return new StringBuilder()
+		.append("ValidationError[")
+		.append(" .track=").append(track)
+		.append(" .sector=").append(sector)
+		.append(" .error=").append(error)
+		.append(" .fileName=").append(fileName)
+		.append(']').toString();
 	}
 
 }

@@ -15,7 +15,7 @@ public class D88Test extends DiskImageBaseTest {
 	@Test
 	public void testGetSectorFromOffset() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D88 d88 = new D88(consoleStream);
+		D88 d88 = new D88(DiskImageType.D88, consoleStream);
 		StringBuilder buf = new StringBuilder();
 		for (int t=0;t<77;t++) {
 			buf.append(t).append('\t');
@@ -32,8 +32,8 @@ public class D88Test extends DiskImageBaseTest {
 	public void testBlankNewImage() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d88");
-		D88 d88 = new D88(consoleStream);
-		new D88(d88.cbmDisk, consoleStream);
+		D88 d88 = new D88(DiskImageType.D88, consoleStream);
+		new D88(DiskImageType.D88, d88.cbmDisk, consoleStream);
 		Assert.assertTrue(d88.equals(d88));
 		Assert.assertTrue("Create D88 image ", d88.saveNewImage(imgFile, "D88 UNIT TEST", "00D88"));
 		d88.readDirectory();
@@ -58,7 +58,7 @@ public class D88Test extends DiskImageBaseTest {
 	public void testImportExportSizes() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d88");
-		D88 img = new D88(consoleStream);
+		D88 img = new D88(DiskImageType.D88, consoleStream);
 		Assert.assertTrue("Create D88 image ", img.saveNewImage(imgFile, "D88 UNIT TEST", "00D88"));
 		for (int i = 0; i < TEST_FILE_SIZE_MAX; i++) {
 			importExportFile(img, 1, i, true);
@@ -70,7 +70,7 @@ public class D88Test extends DiskImageBaseTest {
 	public void testImportExportNumFiles() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d88");
-		D88 img = new D88(consoleStream);
+		D88 img = new D88(DiskImageType.D88, consoleStream);
 		Assert.assertTrue("Create D88 image ", img.saveNewImage(imgFile, "D88 UNIT TEST", "00D88"));
 		importExportNumfiles(img, imgFile, D88.FILE_NUMBER_LIMIT, 3946 - 50); // On D88 the directory blocks counts too
 	}
@@ -79,9 +79,9 @@ public class D88Test extends DiskImageBaseTest {
 	@Test
 	public void testToString() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new D88(consoleStream).toString().isEmpty());
-		Assert.assertEquals("10", new D88(consoleStream).getSectorTitle(10));
-		Assert.assertEquals("33", new D88(consoleStream).getSectorTitle(27));
+		Assert.assertFalse(new D88(DiskImageType.D88, consoleStream).toString().isEmpty());
+		Assert.assertEquals("10", new D88(DiskImageType.D88, consoleStream).getSectorTitle(10));
+		Assert.assertEquals("33", new D88(DiskImageType.D88, consoleStream).getSectorTitle(27));
 	}
 
 }

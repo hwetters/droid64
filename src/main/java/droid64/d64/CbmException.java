@@ -2,6 +2,7 @@ package droid64.d64;
 
 /**
  * Exception to throw when there is a problem when processing a disk image.
+ *
  * @author Henrik
  */
 public class CbmException extends Exception {
@@ -22,11 +23,7 @@ public class CbmException extends Exception {
 
 	@Override
 	public String toString() {
-		var buf = new StringBuilder();
-		buf.append("CbmException[");
-		buf.append(" .message=").append(getMessage());
-		buf.append(']');
-		return buf.toString();
+		return new StringBuilder().append("CbmException[").append(" .message=").append(getMessage()).append(']')
+				.toString();
 	}
-
 }

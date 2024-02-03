@@ -4,14 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.stream.Collectors;
 
 import droid64.d64.DiskImageType;
 
@@ -19,46 +12,19 @@ import droid64.d64.DiskImageType;
  * Persistent value class for representing one disk image.
  * @author Henrik
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Disk", propOrder = {
-	"diskId",
-	"label",
-	"filePath",
-	"fileName",
-	"updated",
-	"imageType",
-	"errors",
-	"warnings",
-	"hostName",
-	"diskFiles"
-})
 public class Disk extends Value implements Serializable {
 	private static final long serialVersionUID = -1L;
 
-	@XmlElement(required = true)
 	private long diskId;
-	@XmlElement(required = true)
 	private String label;
-	@XmlElement(required = true)
 	private String filePath;
-	@XmlElement(required = true)
 	private String fileName;
-	@XmlElement(required = true, type = String.class)
-	@XmlJavaTypeAdapter(DateAdapter .class)
-	@XmlSchemaType(name = "dateTime")
 	private Date updated;
-	@XmlElement(required = true, defaultValue = "UNDEFINED")
-	@XmlSchemaType(name = "droid64.d64.DiskImageType")
 	private DiskImageType imageType;
-	@XmlElement(required = true, defaultValue = "0")
 	private Integer errors;
-	@XmlElement(required = true, defaultValue = "0")
 	private Integer warnings;
-	@XmlElement(required = true)
 	private String hostName;
 
-	@XmlElementWrapper(name="diskFiles")
-	@XmlElement(name="diskFile")
 	private List<DiskFile> diskFiles = null;
 
 	public void setDiskId(long id) {
@@ -146,21 +112,37 @@ public class Disk extends Value implements Serializable {
 
 	@Override
 	public String toString() {
-		var builder = new StringBuilder();
-		builder.append("Disk[");
-		builder.append(" .diskId=").append(diskId);
-		builder.append(" .label=").append(label);
-		builder.append(" .filePath=").append(filePath);
-		builder.append(" .fileName=").append(fileName);
-		builder.append(" .updated=").append(updated);
-		builder.append(" .imageType=").append(imageType);
-		builder.append(" .errors=").append(errors);
-		builder.append(" .warnings=").append(warnings);
-		builder.append(" .diskFiles=").append(diskFiles);
-		builder.append(" .hostName=").append(hostName);
-		builder.append(" .state=").append(getState());
-		builder.append(']');
-		return builder.toString();
+		return new StringBuilder()
+		.append("Disk[")
+		.append(" .diskId=").append(diskId)
+		.append(" .label=").append(label)
+		.append(" .filePath=").append(filePath)
+		.append(" .fileName=").append(fileName)
+		.append(" .updated=").append(updated)
+		.append(" .imageType=").append(imageType)
+		.append(" .errors=").append(errors)
+		.append(" .warnings=").append(warnings)
+		.append(" .diskFiles=").append(diskFiles)
+		.append(" .hostName=").append(hostName)
+		.append(" .state=").append(getState())
+		.append(']').toString();
 	}
 
+	public String toXML() {
+		return new StringBuilder().append("<Disk>")
+				.append("<diskId>").append(diskId).append("</diskId>")
+				.append("<label>").append(label).append("</label>")
+				.append("<filePath>").append(filePath).append("</filePath>")
+				.append("<fileName>").append(fileName).append("</fileName>")
+				.append("<updated>").append(updated).append("</updated>")
+				.append("<imageType>").append(imageType).append("</imageType>")
+				.append("<errors>").append(errors).append("</errors>")
+				.append("<warnings>").append(warnings).append("</warnings>")
+				.append("<hostName>").append(hostName).append("</hostName>")
+				.append("<state>").append(getState()).append("</state>")
+				.append("\n<diskFiles>\n")
+				.append(diskFiles.stream().map(DiskFile::toXML).collect(Collectors.joining()))
+				.append("</diskFiles>\n")
+				.append("</Disk>\n").toString();
+	}
 }

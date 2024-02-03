@@ -1,5 +1,6 @@
 package droid64.d64;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Optional;
@@ -58,6 +59,7 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 	private int offSet;
 	private int lsu; // last sector usage
 	private int loadAddr;
+	private File fsFile;
 
 	public static final int GEOS_NORMAL = 0x00;
 	public static final int GEOS_BASIC = 0x01;
@@ -229,25 +231,25 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 	}
 
 	protected void toString(StringBuilder builder) {
-		builder.append(" dirSector=").append(dirSector);
-		builder.append(" dirTrack=").append(dirTrack);
-		builder.append(" fileClosed=").append(fileClosed);
-		builder.append(" fileLocked=").append(fileLocked);
-		builder.append(" fileScratched=").append(fileScratched);
-		builder.append(" fileType=").append(fileType);
-		builder.append(" geos=").append(Arrays.toString(geos));
-		builder.append(" loadAddr=").append(loadAddr);
-		builder.append(" lsu=").append(lsu);
-		builder.append(" name=").append(name);
-		builder.append(" nameAsBytes=").append(Utility.hexDumpData(nameAsBytes));
-		builder.append(" offSet=").append(offSet);
-		builder.append(" relSector=").append(relSector);
-		builder.append(" relTrack=").append(relTrack);
-		builder.append(" recordLength=").append(recordLength);
-		builder.append(" sector=").append(sector);
-		builder.append(" sizeInBlocks=").append(sizeInBlocks);
-		builder.append(" sizeInBytes=").append(sizeInBytes);
-		builder.append(" track=").append(track);
+		builder.append(" dirSector=").append(dirSector)
+		.append(" dirTrack=").append(dirTrack)
+		.append(" fileClosed=").append(fileClosed)
+		.append(" fileLocked=").append(fileLocked)
+		.append(" fileScratched=").append(fileScratched)
+		.append(" fileType=").append(fileType)
+		.append(" geos=").append(Arrays.toString(geos))
+		.append(" loadAddr=").append(loadAddr)
+		.append(" lsu=").append(lsu)
+		.append(" name=").append(name)
+		.append(" nameAsBytes=").append(Utility.hexDumpData(nameAsBytes))
+		.append(" offSet=").append(offSet)
+		.append(" relSector=").append(relSector)
+		.append(" relTrack=").append(relTrack)
+		.append(" recordLength=").append(recordLength)
+		.append(" sector=").append(sector)
+		.append(" sizeInBlocks=").append(sizeInBlocks)
+		.append(" sizeInBytes=").append(sizeInBytes)
+		.append(" track=").append(track);
 	}
 
 	/**
@@ -610,4 +612,14 @@ public class CbmFile implements Comparable<CbmFile>, Serializable {
 		data[offset + 30] = (byte) sizeInBlocks;
 		data[offset + 31] = (byte) (sizeInBlocks / DiskImage.BLOCK_SIZE);
 	}
+
+	public File getFsFile() {
+		return fsFile;
+	}
+
+	public void setFsFile(File fsFile) {
+		this.fsFile = fsFile;
+	}
+
+
 }

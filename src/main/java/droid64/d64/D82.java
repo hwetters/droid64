@@ -67,13 +67,15 @@ public class D82 extends DiskImage {
 	/** Track number of first track (may be above one for sub directories on 1581 disks) */
 	private static final int FIRST_TRACK = 1;
 
-	public D82(ConsoleStream consoleStream) {
+	public D82(DiskImageType imageFormat, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		bam = new CbmBam(D82Constants.D82_TRACKS.length, 5);
 		initCbmFile(FILE_NUMBER_LIMIT);
 	}
 
-	public D82(byte[] imageData, ConsoleStream consoleStream) {
+	public D82(DiskImageType imageFormat, byte[] imageData, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		cbmDisk = imageData;
 		bam = new CbmBam(D82Constants.D82_TRACKS.length, 5);
@@ -146,17 +148,17 @@ public class D82 extends DiskImage {
 	public byte[] getFileData(int number) throws CbmException {
 		if (cbmDisk == null) {
 			throw new CbmException("getFileData: No disk data exist.");
-		} else if (number >= cbmFile.length) {
+		} else if (number >= getCbmFileSize()) {
 			throw new CbmException("getFileData: File number " + number + " does not exist.");
 		} else if (isCpmImage()) {
 			feedbackStream.append("getFileData: CP/M mode.\n");
 			throw new CbmException("Not yet implemented for CP/M format.");
-		} else if (cbmFile[number].isFileScratched()) {
+		} else if (getCbmFile(number).isFileScratched()) {
 			throw new CbmException("getFileData: File number " + number + " is deleted.");
 		}
-		feedbackStream.append("getFileData: ").append(number).append(" '").append(cbmFile[number].getName()).append("'\n");
+		feedbackStream.append("getFileData: ").append(number).append(" '").append(getCbmFile(number).getName()).append("'\n");
 		feedbackStream.append("Tracks / Sectors: ");
-		return getData(cbmFile[number].getTrack(), cbmFile[number].getSector());
+		return getData(getCbmFile(number).getTrack(), getCbmFile(number).getSector());
 	}
 
 	@Override
@@ -638,7 +640,7 @@ public class D82 extends DiskImage {
 	public Integer validate(List<ValidationError.Error> repairList) {
 		getValidationErrorList().clear();
 		// init to null
-		Boolean[][] bamEntry = new Boolean[getTrackCount() + 1][getMaxSectorCount()];
+		var bamEntry = new Boolean[getTrackCount() + 1][getMaxSectorCount()];
 		for (int trk = 0; trk < bamEntry.length; trk++) {
 			Arrays.fill(bamEntry[trk], null);
 		}
@@ -651,8 +653,8 @@ public class D82 extends DiskImage {
 		int sector = BAM_SECT_1;
 		validateDirEntries(track, sector, bamEntry);
 		// follow each file and check data blocks
-		for (int n=0; n < cbmFile.length; n++) {
-			var cf = cbmFile[n];
+		for (int n=0; n < getCbmFileSize(); n++) {
+			var cf = getCbmFile(n);
 			if (cf.getFileType() == FileType.CBM) {
 				getValidationErrorList().add(ValidationError.Error.ERROR_PARTITIONS_UNSUPPORTED.getError(track, sector, cf.getName()));
 				errors++;
@@ -743,7 +745,7 @@ public class D82 extends DiskImage {
 				getValidationErrorList().add(ValidationError.Error.ERROR_TOO_MANY.getError(track, sector));
 				return;
 			} else if (track >= bamEntry.length || sector >= bamEntry[track].length) {
-				getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_OUTSIDE_IMAGE.getError(track, sector, cbmFile[fileNum].getName()));
+				getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_OUTSIDE_IMAGE.getError(track, sector, getCbmFile(fileNum).getName()));
 				errors++;
 				return;
 			} else if (bamEntry[track][sector] == null) {
@@ -753,7 +755,7 @@ public class D82 extends DiskImage {
 				// Detect cyclic references by keeping track of all sectors used by one file and check if a sector is already seen.
 				TrackSector thisBlock = new TrackSector(track, sector);
 				if (fileErrorList.contains(thisBlock)) {
-					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_SEEN.getError(track, sector, cbmFile[fileNum].getName()));
+					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_SEEN.getError(track, sector, getCbmFile(fileNum).getName()));
 					return;
 				} else {
 					fileErrorList.add(thisBlock);

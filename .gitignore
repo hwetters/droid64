@@ -7,6 +7,23 @@
 # BlueJ files
 *.ctxt
 
+*.bak
+
+*.d64
+*.d64.gz
+*.d71
+*.d71.gz
+*.d80
+*.d80.gz
+*.d81
+*.d81.gz
+*.d88
+*.d88.gz
+*.d90
+*.d90.gz
+*.t64
+*.t64.gz
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 

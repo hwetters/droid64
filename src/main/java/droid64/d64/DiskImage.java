@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import droid64.db.Disk;
@@ -101,7 +100,7 @@ public abstract class DiskImage implements Serializable {
 	 * These attributes are used in the directory and are initialized in initCbmFiles() and filled with data in readDirectory().<br>
 	 * Their index is the directory-position they have in the image file (see readDirectory()).
 	 */
-	protected CbmFile[] cbmFile = null;
+	protected final transient List<CbmFile> cbmFile = new ArrayList<>();
 	/** All attributes which are stored in the BAM of a image file - gets filled with data in readBAM() */
 	protected CbmBam bam;
 	/** The number of validation errors, or null is no validation has been done. */
@@ -254,13 +253,35 @@ public abstract class DiskImage implements Serializable {
 	public abstract void markSectorUsed(int track, int sector);
 
 	/**
+	 * @param block the block to be marked as free
+	 */
+	public void markSectorFree(TrackSector block) {
+		markSectorFree(block.track, block.sector);
+	}
+
+	/**
+	 * @param block the block to be marked as used
+	 */
+	public void markSectorUsed(TrackSector block) {
+		markSectorUsed(block.track, block.sector);
+	}
+
+	/**
+	 * @param block the block to check
+	 * @return true if block is free
+	 */
+	public boolean isSectorFree(TrackSector block) {
+		return isSectorFree(block.track, block.sector);
+	}
+
+	/**
 	 * Initiate image structure.
 	 * @param fileNumberLimit file number limit
 	 */
 	protected void initCbmFile(int fileNumberLimit) {
-		cbmFile = new CbmFile[fileNumberLimit + 1];
+		cbmFile.clear();
 		for (int i = 0; i < fileNumberLimit+1; i++) {
-			cbmFile[i] = new CbmFile();
+			cbmFile.add(new CbmFile());
 		}
 	}
 
@@ -283,8 +304,10 @@ public abstract class DiskImage implements Serializable {
 	 * @throws CbmException if image could not be loaded (file missing, file corrupt out of memory etc).
 	 */
 	public static DiskImage getDiskImage(File file, ConsoleStream consoleStream) throws CbmException {
-		DiskImage image = Setting.getDiskImageType(file).getInstance(consoleStream).readImage(file);
-		image.setFile(file);
+		var image = Setting.getDiskImageType(file).getInstance(consoleStream).readImage(file);
+		if (image != null) {
+			image.setFile(file);
+		}
 		return image;
 	}
 
@@ -337,7 +360,7 @@ public abstract class DiskImage implements Serializable {
 			for (int i=0; i < DIR_ENTRIES_PER_SECTOR; i++) {
 				var newFile = getCpmFile(entry, idx + i * DIR_ENTRY_SIZE, use16bitau);
 				if (newFile != null) {
-					cbmFile[filenumber++] = newFile;
+					cbmFile.set(filenumber++, newFile);
 					entry = newFile;
 				}
 			}
@@ -417,9 +440,10 @@ public abstract class DiskImage implements Serializable {
 	 * @param newFileType the new type of the file (PRG, REL, SEQ, DEL, USR)
 	 */
 	public void renameFile(int cbmFileNumber, String newFileName, FileType newFileType) {
-		feedbackStream.append("renameFile: oldName '").append(cbmFile[cbmFileNumber].getName()).append(" newName '").append(newFileName).append("'\n");
-		CbmFile newFile = new CbmFile(cbmFile[cbmFileNumber]);
+		feedbackStream.append("renameFile: oldName '").append(getCbmFile(cbmFileNumber).getName()).append(" newName '").append(newFileName).append("'\n");
+		var newFile = new CbmFile(getCbmFile(cbmFileNumber));
 		newFile.setName(newFileName);
+		newFile.setNameAsBytes(newFile.getName().getBytes());
 		newFile.setFileType(newFileType);
 		writeDirectoryEntry(newFile, newFile.getDirPosition());
 	}
@@ -571,11 +595,11 @@ public abstract class DiskImage implements Serializable {
 	}
 
 	private boolean checkCpmImageFormat() {
-		String diskName = bam.getDiskName()!=null ? bam.getDiskName().replaceAll("\\u00a0", Utility.EMPTY).trim() : null;
+		String diskName = bam.getDiskName()!=null ? bam.getDiskName().replace("\\u00a0", Utility.EMPTY).trim() : null;
 		if (!CPM_DISKNAME_1.equals(diskName) && !CPM_DISKNAME_2.equals(diskName)) {
 			return false;
 		}
-		String diskId = bam.getDiskId() != null ? bam.getDiskId().replaceAll("\\u00a0", Utility.SPACE).trim() : null;
+		String diskId = bam.getDiskId() != null ? bam.getDiskId().replace("\\u00a0", Utility.SPACE).trim() : null;
 		if (CPM_DISKID_GCR.equals(diskId)) {
 			if ("CBM".equals(getStringFromBlock(1, 0, 0, 3))) {
 				if (this instanceof D71 && (getCbmDiskValue(BLOCK_SIZE - 1) & 0xff) == 0xff) {
@@ -633,6 +657,9 @@ public abstract class DiskImage implements Serializable {
 			geosFormat = false;
 		} else if (this instanceof D88) {
 			imageFormat = DiskImageType.D88;
+			geosFormat = false;
+		} else if (this instanceof D90) {
+			imageFormat = cbmDisk.length == D90.D9060_SIZE ? DiskImageType.D90_9060 : DiskImageType.D90_9090;
 			geosFormat = false;
 		} else {
 			imageFormat = DiskImageType.UNDEFINED;
@@ -783,7 +810,7 @@ public abstract class DiskImage implements Serializable {
 	 * @return maximum number of file entries which can be stored
 	 */
 	public int getFileCapacity() {
-		return cbmFile != null ? cbmFile.length : 0;
+		return  cbmFile.size();
 	}
 
 	/**
@@ -791,8 +818,8 @@ public abstract class DiskImage implements Serializable {
 	 * @return cbm file
 	 */
 	public CbmFile getCbmFile(int number) {
-		if (number<cbmFile.length && number >= 0) {
-			return cbmFile[number];
+		if (number < cbmFile.size() && number >= 0) {
+			return cbmFile.get(number);
 		} else {
 			return null;
 		}
@@ -803,9 +830,13 @@ public abstract class DiskImage implements Serializable {
 	 * @param file cbm file
 	 */
 	public void setCbmFile(int number, CbmFile file) {
-		cbmFile[number] = file;
+		cbmFile.set(number, file);
 	}
 
+	public int getCbmFileSize() {
+		return cbmFile.size();
+	}
+	
 	/**
 	 * @return BAM
 	 */
@@ -873,7 +904,7 @@ public abstract class DiskImage implements Serializable {
 	 * @return found file or null if nothing found.
 	 */
 	public CbmFile findFile(String name, FileType fileType) {
-		if (cbmFile == null || name == null) {
+		if (name == null) {
 			return null;
 		}
 		for (CbmFile cf : cbmFile) {
@@ -885,7 +916,7 @@ public abstract class DiskImage implements Serializable {
 	}
 
 	public Stream<CbmFile> getFileEntries() {
-		return Optional.ofNullable(cbmFile).map(Stream::of).orElse(Stream.empty()).filter(f -> f != null && f.getName() != null && !f.isFileScratched());
+		return cbmFile.stream().filter(f -> f != null && f.getName() != null && !f.isFileScratched());
 	}
 
 	/**
@@ -928,7 +959,7 @@ public abstract class DiskImage implements Serializable {
 	}
 
 	public String getSectorTitle(int i) {
-		return Integer.toString(i-1);
+		return Integer.toString(i - 1);
 	}
 
 	/**
@@ -948,9 +979,9 @@ public abstract class DiskImage implements Serializable {
 				verifyTrackSector(track, sector);
 				int dataPosition = getSectorOffset(track, sector);
 				for (int i = 0; i < DIR_ENTRIES_PER_SECTOR; i ++) {
-					cbmFile[filenumber] = new CbmFile(cbmDisk, dataPosition + i * DIR_ENTRY_SIZE);
-					if (!cbmFile[filenumber].isFileScratched()) {
-						cbmFile[filenumber].setDirPosition(dirPosition);
+					cbmFile.set(filenumber, new CbmFile(cbmDisk, dataPosition + i * DIR_ENTRY_SIZE));
+					if (!getCbmFile(filenumber).isFileScratched()) {
+						getCbmFile(filenumber).setDirPosition(dirPosition);
 						if (filenumber < maxNumFiles)  {
 							filenumber++;
 						} else {
@@ -962,7 +993,7 @@ public abstract class DiskImage implements Serializable {
 				}
 				track = getCbmDiskValue(dataPosition + 0);
 				sector = getCbmDiskValue(dataPosition + 1);
-			} while (track != 0 && !fileLimitReached);
+			} while (track >= 0 && !fileLimitReached && sector != 0xff);
 			if (fileLimitReached) {
 				feedbackStream.append("Error: Too many entries in directory (more than ").append(maxNumFiles).append(")!\n");
 			}

@@ -51,14 +51,14 @@ import javax.swing.WindowConstants;
 public class ViewImagePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	private List<byte[]> dataList;
-	private List<String> nameList;
-	private int currentIndex = 0;
 	private final MainPanel mainPanel;
 	private final ImagePanel imgPanel = new ImagePanel();
 	private final String title;
 	private final JButton closeButton = new JButton("Close");
 	private JDialog dialog;
+	private List<byte[]> dataList;
+	private List<String> nameList;
+	private int currentIndex = 0;
 
 	public ViewImagePanel(String title, MainPanel mainPanel) {
 		this.mainPanel = mainPanel;
@@ -73,7 +73,6 @@ public class ViewImagePanel extends JPanel {
 		this.nameList = nameList != null ? nameList : new ArrayList<>();
 		currentIndex = 0;
 		imgPanel.setImage(getNextImage());
-
 		showImage();
 	}
 
@@ -155,7 +154,7 @@ public class ViewImagePanel extends JPanel {
 		currentIndex = currentIndex % dataList.size();
 		var data = dataList.get(currentIndex);
 		String name = currentIndex < nameList.size() ? nameList.get(currentIndex) : null;
-		CbmPicture cbm = new CbmPicture(data, name);
+		var cbm = new CbmPicture(data, name);
 		currentIndex++;
 		return cbm;
 	}

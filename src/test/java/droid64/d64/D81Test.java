@@ -20,7 +20,7 @@ public class D81Test extends DiskImageBaseTest {
 	@Test
 	public void testToString() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new D81(consoleStream).toString().isEmpty());
+		Assert.assertFalse(new D81(DiskImageType.D81, consoleStream).toString().isEmpty());
 	}
 
 	@Override
@@ -28,8 +28,8 @@ public class D81Test extends DiskImageBaseTest {
 	public void testBlankNewImage() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 d81 = new D81(consoleStream);
-		new D81(d81.cbmDisk, consoleStream);
+		D81 d81 = new D81(DiskImageType.D81, consoleStream);
+		new D81(DiskImageType.D81, d81.cbmDisk, consoleStream);
 		Assert.assertTrue(d81.equals(d81));
 		Assert.assertTrue("Create D81 image ", d81.saveNewImage(imgFile, "D81 BLANK", "00D81"));
 		d81.readDirectory();
@@ -51,7 +51,7 @@ public class D81Test extends DiskImageBaseTest {
 	public void testImportExportSizes() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 img = new D81(consoleStream);
+		D81 img = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", img.saveNewImage(imgFile, "D81 SIZES", "00D81"));
 		for (int i = 0; i < TEST_FILE_SIZE_MAX; i++) {
 			importExportFile(img, 1, i, true);
@@ -63,7 +63,7 @@ public class D81Test extends DiskImageBaseTest {
 	public void testImportExportNumFiles() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 img = new D81(consoleStream);
+		D81 img = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", img.saveNewImage(imgFile, "D81 NUM FILES", "00D81"));
 		importExportNumfiles(img, imgFile, D81.FILE_NUMBER_LIMIT, BLOCKS_FREE);
 	}
@@ -73,7 +73,7 @@ public class D81Test extends DiskImageBaseTest {
 		// prepare image file
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 d81 = new D81(consoleStream);
+		D81 d81 = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", d81.saveNewImage(imgFile, "D81 MKDIR TEST", "00D81"));
 		d81.readDirectory();
 		d81.readBAM();
@@ -109,7 +109,7 @@ public class D81Test extends DiskImageBaseTest {
 		// prepare image file
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 d81 = new D81(consoleStream);
+		D81 d81 = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", d81.saveNewImage(imgFile, "D81 COPY PART", "00D81"));
 		d81.readDirectory();
 		d81.readBAM();
@@ -124,9 +124,9 @@ public class D81Test extends DiskImageBaseTest {
 
 		d81.readDirectory();
 		Assert.assertEquals("Expect 1 file (P1 partition)", 1, d81.filesUsedCount);
-		Assert.assertEquals("Name of P1 partition", "P1", d81.cbmFile[0].getName());
-		Assert.assertEquals("Track of P1 partition", 1, d81.cbmFile[0].getTrack());
-		Assert.assertEquals("Block count of P1 partition", 3*40, d81.cbmFile[0].getSizeInBlocks());
+		Assert.assertEquals("Name of P1 partition", "P1", d81.getCbmFile(0).getName());
+		Assert.assertEquals("Track of P1 partition", 1, d81.getCbmFile(0).getTrack());
+		Assert.assertEquals("Block count of P1 partition", 3*40, d81.getCbmFile(0).getSizeInBlocks());
 
 		// PARTFILE_1.1
 
@@ -144,12 +144,12 @@ public class D81Test extends DiskImageBaseTest {
 		Assert.assertNull(d81.setCurrentPartition(null));
 		d81.readDirectory();
 		Assert.assertEquals("Expect 1 file (P1 partition)", 1, d81.filesUsedCount);
-		Assert.assertEquals("Name of P1 partition", "P1", d81.cbmFile[0].getName());
+		Assert.assertEquals("Name of P1 partition", "P1", d81.getCbmFile(0).getName());
 
 		Assert.assertNotNull(d81.setCurrentPartition(1));
 		d81.readDirectory();
 		Assert.assertEquals("Expect 1 file (PARTFILE 1.1)", 1, d81.filesUsedCount);
-		Assert.assertEquals("Name of file in P1 ", "PARTFILE 1.1", d81.cbmFile[0].getName());
+		Assert.assertEquals("Name of file in P1 ", "PARTFILE 1.1", d81.getCbmFile(0).getName());
 
 		Assert.assertTrue("Read file data ", compareData(data_1_1, d81.getFileData(0)));
 
@@ -163,10 +163,10 @@ public class D81Test extends DiskImageBaseTest {
 		Assert.assertNull(d81.setCurrentPartition(null));
 		d81.readDirectory();
 		Assert.assertEquals("Expect 2 file2 (P1 & P2 partitions)", 2, d81.filesUsedCount);
-		Assert.assertEquals("Name of P1 partition", "P1", d81.cbmFile[0].getName());
-		Assert.assertEquals("Name of P2 partition", "P2", d81.cbmFile[1].getName());
-		Assert.assertEquals("Block count of P2 partition", 5*40, d81.cbmFile[1].getSizeInBlocks());
-		Assert.assertEquals("Track of P2 partition", 4, d81.cbmFile[1].getTrack());
+		Assert.assertEquals("Name of P1 partition", "P1", d81.getCbmFile(0).getName());
+		Assert.assertEquals("Name of P2 partition", "P2", d81.getCbmFile(1).getName());
+		Assert.assertEquals("Block count of P2 partition", 5*40, d81.getCbmFile(1).getSizeInBlocks());
+		Assert.assertEquals("Track of P2 partition", 4, d81.getCbmFile(1).getTrack());
 
 		Assert.assertNotNull(d81.setCurrentPartition(4));
 	}
@@ -176,7 +176,7 @@ public class D81Test extends DiskImageBaseTest {
 		// prepare image file
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 d81 = new D81(consoleStream);
+		D81 d81 = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", d81.saveNewImage(imgFile, "D81 PARTFILES", "00D81"));
 		d81.markSectorUsed(1, 1); // mark a block on track as used
 		d81.readDirectory();
@@ -205,7 +205,7 @@ public class D81Test extends DiskImageBaseTest {
 		// prepare image file
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 d81 = new D81(consoleStream);
+		D81 d81 = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", d81.saveNewImage(imgFile, "D81 TRK PART", "00D81"));
 		d81.markSectorUsed(1, 1); // mark a block on track as used
 		d81.readDirectory();
@@ -232,7 +232,7 @@ public class D81Test extends DiskImageBaseTest {
 		// prepare image file
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d81", true);
-		D81 d81 = new D81(consoleStream);
+		D81 d81 = new D81(DiskImageType.D81, consoleStream);
 		Assert.assertTrue("Create D81 image ", d81.saveNewImage(imgFile, "D81 DEL PART", "00D81"));
 		d81.readDirectory();
 		d81.readBAM();
@@ -269,7 +269,7 @@ public class D81Test extends DiskImageBaseTest {
 		d81.readDirectory();
 		d81.readBAM();
 
-		CbmFile cf = d81.cbmFile[fileNum];
+		CbmFile cf = d81.getCbmFile(fileNum);
 		Assert.assertNotNull(pName+":entry", cf);
 		Assert.assertEquals(pName+":name", pName, cf.getName());
 		Assert.assertEquals(pName+":type", FileType.CBM, cf.getFileType());

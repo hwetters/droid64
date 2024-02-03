@@ -16,7 +16,7 @@ public class D71Test extends DiskImageBaseTest {
 	@Test
 	public void testToString() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new D71(consoleStream).toString().isEmpty());
+		Assert.assertFalse(new D71(DiskImageType.D71, consoleStream).toString().isEmpty());
 	}
 
 	@Override
@@ -24,8 +24,8 @@ public class D71Test extends DiskImageBaseTest {
 	public void testBlankNewImage() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d71");
-		D71 d71 = new D71(consoleStream);
-		new D71(d71.cbmDisk, consoleStream);
+		D71 d71 = new D71(DiskImageType.D71, consoleStream);
+		new D71(DiskImageType.D71, d71.cbmDisk, consoleStream);
 		Assert.assertTrue(d71.equals(d71));
 		Assert.assertTrue("Create D71 image ", d71.saveNewImage(imgFile, "D71 UNIT TEST", "00D71"));
 		d71.readDirectory();
@@ -47,7 +47,7 @@ public class D71Test extends DiskImageBaseTest {
 	public void testImportExportSizes() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d71");
-		D71 img = new D71(consoleStream);
+		D71 img = new D71(DiskImageType.D71, consoleStream);
 		Assert.assertTrue("Create D71 image ", img.saveNewImage(imgFile, "D71 UNIT TEST", "00D71"));
 		for (int i = 0; i < TEST_FILE_SIZE_MAX; i++) {
 			importExportFile(img, 1, i, true);
@@ -59,7 +59,7 @@ public class D71Test extends DiskImageBaseTest {
 	public void testImportExportNumFiles() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d71");
-		D71 img = new D71(consoleStream);
+		D71 img = new D71(DiskImageType.D71, consoleStream);
 		Assert.assertTrue("Create D71 image ", img.saveNewImage(imgFile, "D71 UNIT TEST", "00D71"));
 		importExportNumfiles(img, imgFile, D71.FILE_NUMBER_LIMIT, 1328);
 	}
@@ -67,19 +67,19 @@ public class D71Test extends DiskImageBaseTest {
 	@Test(expected=CbmException.class)
 	public void testGetFileData_BadFileNumFail() throws CbmException {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		new D71(consoleStream).getFileData(Integer.MAX_VALUE);
+		new D71(DiskImageType.D71, consoleStream).getFileData(Integer.MAX_VALUE);
 	}
 
 	@Test(expected=CbmException.class)
 	public void testReadPartition_Fail() throws CbmException {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		new D71(consoleStream).readPartition(1, 1, 2);
+		new D71(DiskImageType.D71, consoleStream).readPartition(1, 1, 2);
 	}
 
 	@Test
 	public void testTrackOffsetTable() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D71 img = new D71(consoleStream);
+		D71 img = new D71(DiskImageType.D71, consoleStream);
 		int secIn = 0;
 		int offset = 0;
 		for (int trk = img.getFirstTrack(); trk < img.getTrackCount()+img.getFirstTrack(); trk++) {

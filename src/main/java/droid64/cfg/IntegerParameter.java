@@ -14,6 +14,6 @@ public class IntegerParameter extends Parameter<Integer>{
 	@Override
 	public String toString() {
 		Integer i = getValue();
-		return getName() + "=" + (i != null ? Integer.toString(i) : "");
+		return getName() + "=" + (i != null ? String.valueOf(i) : "");
 	}
 }

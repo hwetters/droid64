@@ -3,12 +3,6 @@ package droid64.db;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-
 import droid64.d64.CbmFile;
 import droid64.d64.FileType;
 import droid64.d64.Utility;
@@ -17,29 +11,13 @@ import droid64.d64.Utility;
  * Persistent value class for representing one file on a disk image
  * @author Henrik
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DiskFile", propOrder = {
-	"fileId",
-	"diskId",
-	"name",
-	"fileType",
-	"size",
-	"fileNum",
-	"flags",
-	"nameAsBytes"
-})
 public class DiskFile extends Value implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@XmlElement(required = true)
 	private long fileId;
-	@XmlElement(required = true)
 	private long diskId;
-	@XmlElement(required = true)
 	private String name;
-	@XmlElement(required = true, defaultValue = "PRG")
-	@XmlSchemaType(name = "droid64.d64.FileType")
 	private FileType fileType;
 	private int size;
 	private int fileNum;
@@ -138,18 +116,26 @@ public class DiskFile extends Value implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("DiskFile[");
-		builder.append(" .fileId=").append(fileId);
-		builder.append(" .diskId=").append(diskId);
-		builder.append(" .name=").append(name);
-		builder.append(" .size=").append(size);
-		builder.append(" .flags=").append(flags);
-		builder.append(" .fileNum=").append(fileNum);
-		builder.append(" .fileType=").append(fileType);
-		builder.append(" .state=").append(getState());
-		builder.append(" .nameAsBytes=").append(Utility.hexDumpData(nameAsBytes));
-		builder.append(']');
-		return builder.toString();
+		return new StringBuilder()
+		.append("DiskFile[")
+		.append(" .fileId=").append(fileId)
+		.append(" .diskId=").append(diskId)
+		.append(" .name=").append(name)
+		.append(" .size=").append(size)
+		.append(" .flags=").append(flags)
+		.append(" .fileNum=").append(fileNum)
+		.append(" .fileType=").append(fileType)
+		.append(" .state=").append(getState())
+		.append(" .nameAsBytes=").append(Utility.hexDumpData(nameAsBytes))
+		.append(']').toString();
+	}
+
+	public String toXML() {
+		return new StringBuilder().append("<DiskFile>\n").append("<fileId>").append(fileId).append("</fileId>")
+				.append("<diskId>").append(diskId).append("</diskId>").append("<name>").append(name).append("</name>")
+				.append("<size>").append(size).append("</size>").append("<flags>").append(flags).append("</flags>")
+				.append("<fileNum>").append(fileNum).append("</fileNum>").append("<fileType>").append(fileType)
+				.append("</fileType>").append("<state>").append(getState()).append("</state>").append("<nameAsBytes>")
+				.append(Utility.hexDumpData(nameAsBytes)).append("</nameAsBytes>").append("</DiskFile>\n").toString();
 	}
 }

@@ -68,13 +68,13 @@ public class DiskImageTest extends DiskImageBaseTest {
 		final byte[] data = generateRandom(65534);
 		var consoleStream = new ConsoleStream(new JTextArea());
 		byte[] copy =
-				test(new D88(consoleStream), getTempFile(".d88"),
-				test(new D82(consoleStream), getTempFile(".d82"),
-				test(new D81(consoleStream), getTempFile(".d81"),
-				test(new D80(consoleStream), getTempFile(".d80"),
-				test(new D71(consoleStream), getTempFile(".d71"),
-				test(new D67(consoleStream), getTempFile(".d67"),
-				test(new D64(consoleStream), getTempFile(".d64"), data)))))));
+				test(new D88(DiskImageType.D88, consoleStream), getTempFile(".d88"),
+				test(new D82(DiskImageType.D82, consoleStream), getTempFile(".d82"),
+				test(new D81(DiskImageType.D81, consoleStream), getTempFile(".d81"),
+				test(new D80(DiskImageType.D80, consoleStream), getTempFile(".d80"),
+				test(new D71(DiskImageType.D71, consoleStream), getTempFile(".d71"),
+				test(new D67(DiskImageType.D67, consoleStream), getTempFile(".d67"),
+				test(new D64(DiskImageType.D64, consoleStream), getTempFile(".d64"), data)))))));
 
 		Assert.assertTrue(compareData(data, copy));
 	}

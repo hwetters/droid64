@@ -62,9 +62,11 @@ public class D64 extends DiskImage {
 
 	/**
 	 * Constructor
+	 * @param imageFormat
 	 * @param consoleStream the stream for errors
 	 */
-	public D64(ConsoleStream consoleStream) {
+	public D64(DiskImageType imageFormat, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		initCbmFile(FILE_NUMBER_LIMIT);
 		bam = new CbmBam(D64Constants.D64_TRACKS.length, 4);
@@ -72,10 +74,12 @@ public class D64 extends DiskImage {
 
 	/**
 	 * Constructor
+	 * @param imageFormat
 	 * @param imageData data of a disk image
 	 * @param consoleStream the stream for errors
 	 */
-	public D64(byte[] imageData, ConsoleStream consoleStream) {
+	public D64(DiskImageType imageFormat, byte[] imageData, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		cbmDisk = imageData;
 		initCbmFile(FILE_NUMBER_LIMIT);
@@ -231,12 +235,12 @@ public class D64 extends DiskImage {
 	public byte[] getFileData(int number) throws CbmException {
 		if (cbmDisk == null) {
 			throw new CbmException("getFileData: No disk data exist.");
-		} else if (number >= cbmFile.length) {
+		} else if (number >= getCbmFileSize()) {
 			throw new CbmException("getFileData: File number " + number + " does not exist.");
 		} else if (isCpmImage()) {
 			feedbackStream.append("getFileData: CP/M mode.\n");
-			if (cbmFile[number] instanceof CpmFile) {
-				CpmFile cpm = (CpmFile)cbmFile[number];
+			if (getCbmFile(number) instanceof CpmFile) {
+				CpmFile cpm = (CpmFile)getCbmFile(number);
 				byte[] data = new byte[ cpm.getRecordCount() * CPM_RECORD_SIZE ];
 				int dstPos = 0;
 				for (Integer au : cpm.getAllocList()) {
@@ -255,12 +259,12 @@ public class D64 extends DiskImage {
 			} else {
 				throw new CbmException("CP/M format but not a CP/M file.\n");
 			}
-		} else if (cbmFile[number].isFileScratched()) {
+		} else if (getCbmFile(number).isFileScratched()) {
 			throw new CbmException("getFileData: File number " + number + " is deleted.");
 		}
-		feedbackStream.append("getFileData: ").append(number).append(" '").append(cbmFile[number].getName()).append("'\n");
+		feedbackStream.append("getFileData: ").append(number).append(" '").append(getCbmFile(number).getName()).append("'\n");
 		feedbackStream.append("Tracks / Sectors: ");
-		return getData(cbmFile[number].getTrack(), cbmFile[number].getSector());
+		return getData(getCbmFile(number).getTrack(), getCbmFile(number).getSector());
 	}
 
 	/**
@@ -740,11 +744,11 @@ public class D64 extends DiskImage {
 		buf.append(" imageFormat=").append(imageFormat);
 		buf.append(" blocksFree=").append(getBlocksFree());
 		buf.append(" cbmFile=[");
-		for (int i=0; cbmFile!=null && i<cbmFile.length && i<filesUsedCount; i++) {
+		for (int i=0; i<getCbmFileSize() && i<filesUsedCount; i++) {
 			if (i>0) {
 				buf.append(", ");
 			}
-			buf.append(this.cbmFile[i]);
+			buf.append(this.getCbmFile(i));
 		}
 		buf.append(']');
 		buf.append(" filesUsedCount=").append(filesUsedCount);
@@ -803,8 +807,8 @@ public class D64 extends DiskImage {
 		warnings = 0;
 		validateDirEntries(track, sector, bamEntry);
 		// follow each file and check data blocks
-		for (int n=0; n < cbmFile.length; n++) {
-			var cf = cbmFile[n];
+		for (int n=0; n < getCbmFileSize(); n++) {
+			var cf = getCbmFile(n);
 			if (cf.getFileType() == FileType.CBM) {
 				getValidationErrorList().add(ValidationError.Error.ERROR_PARTITIONS_UNSUPPORTED.getError(track, sector, cf.getName()));
 				errors++;
@@ -876,7 +880,7 @@ public class D64 extends DiskImage {
 				getValidationErrorList().add(ValidationError.Error.ERROR_TOO_MANY.getError(track, sector));
 				return;
 			} else if (track >= bamEntry.length || sector >= bamEntry[track].length) {
-				getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_OUTSIDE_IMAGE.getError(track, sector, cbmFile[fileNum].getName()));
+				getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_OUTSIDE_IMAGE.getError(track, sector, getCbmFile(fileNum).getName()));
 				errors++;
 				return;
 			} else if (bamEntry[track][sector] == null) {
@@ -885,15 +889,15 @@ public class D64 extends DiskImage {
 				errors++;
 				TrackSector thisBlock = new TrackSector(track, sector);
 				if (fileErrorList.contains(thisBlock)) {
-					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_SEEN.getError(track, sector, cbmFile[fileNum].getName()));
+					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_SEEN.getError(track, sector, getCbmFile(fileNum).getName()));
 					return;
 				} else {
 					fileErrorList.add(thisBlock);
 				}
 				if (bamEntry[track][sector].equals(Boolean.FALSE)) {
-					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_USED.getError(track,sector, cbmFile[fileNum].getName()));
+					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_USED.getError(track,sector, getCbmFile(fileNum).getName()));
 				} else {
-					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_FREE.getError(track,sector, cbmFile[fileNum].getName()));
+					getValidationErrorList().add(ValidationError.Error.ERROR_FILE_SECTOR_ALREADY_FREE.getError(track,sector, getCbmFile(fileNum).getName()));
 				}
 			}
 			int tmpTrack = track;

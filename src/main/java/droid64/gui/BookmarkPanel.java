@@ -16,11 +16,11 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
 import droid64.DroiD64;
+import droid64.cfg.Bookmark;
+import droid64.cfg.BookmarkType;
 import droid64.d64.CbmException;
 import droid64.d64.DiskImage;
 import droid64.d64.Utility;
-import droid64.db.Bookmark;
-import droid64.db.Bookmark.BookmarkType;
 
 public class BookmarkPanel extends JPanel {
 

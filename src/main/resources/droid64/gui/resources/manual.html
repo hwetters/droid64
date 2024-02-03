@@ -47,12 +47,13 @@ However, I use it myself and I have managed pretty well so far. Don't hesitate c
 How to do this depends on your operating system and the way you start DroiD64.</p>
 <p>Example commandline for Linux, UNIX and similar operating systems with a MySQL database driver:</p>
 <pre style="display: inline-block; border:1px solid Black;padding: 4px;">
-  java -Xmx1024m -classpath /opt/lib/mysql-connector-java-5.1.47/mysql-connector-java-5.1.47-bin.jar:droid64-${project.version}.jar droid64.DroiD64
+  java -Xmx1024m -classpath /opt/lib/mysql-connector-j-8.3.0/mysql-connector-j-8.3.0-bin.jar:droid64-${project.version}.jar droid64.DroiD64
 </pre>
 <p>Example commandline for Microsoft Windows with a MySQL database driver:</p>
 <pre style="display: inline-block; border:1px solid Black;padding: 4px;">
-  java -Xmx1024m -classpath C:\mysql-connector-java-5.1.47\mysql-connector-java-5.1.47-bin.jar;droid64-${project.version}.jar droid64.DroiD64
+  java -Xmx1024m -classpath C:\mysql-connector-j-8.3.0\mysql-connector-j-8.3.0.jar;droid64-${project.version}.jar droid64.DroiD64
 </pre>
+<p>DroiD64 has two optional commandline arguments for specifying a file or directory to be opened in the left and right panel.</p>
 
 <hr/>
 <h2>2. Disk image formats</h2>
@@ -65,6 +66,8 @@ How to do this depends on your operating system and the way you start DroiD64.</
 <li> D82 (C8250) The double sided D80, with a total of 1040 kB. It is organized as 154 tracks with between 23 and 29 sectors.</li>
 <li> D88 (C8280) A 8 inch double sided format with 1001 kB in total. It has 77 tracks with 26 sectors on each side.</li>
 <li> T64 (C1530) The tape format used in several emulators.</li>
+<li> D90 (D9060) A Commodore 6.4 MB hard disk. It has 153 tracks, 32 sectors and 4 heads. </li>
+<li> D90 (D9090) A Commodore 9.6 MB hard disk. It has 153 tracks, 32 sectors and 6 heads. </li>
 <li> LNX The LiNX disk archive format. </li>
 <li> Zip Supported to allow you to browse contents of image files. When running plugins, the chosen image is extracted into the temp folder and is deleted after use.</li>
 <li> CP/M formatted D64, D71 and D81 images can be read. No write support at the moment, but it is on the to do list. </li>
@@ -89,8 +92,8 @@ The <b>fork new thread</b> checkbox, which when checked will make the plugin to 
  <li><i>{ImageFiles}</i> - Similar to <i>{Files}</i> but each file is prefixed by the <i>image</i>: E.g. "<i>/some/where/image.d64:file1 /some/where/image.d64:file2</i>". When used with VICE it will autostart the selected file.</li>
  <li><i>{Target}</i> - The path of the the other disk pane.</li>
  <li><i>{NewFile}</i> - Opens a file dialog asking for a name for a new disk image.</li>
- <li><i>{ImageType}</i> - Type of image (D64, D67, D71, D80, D81 D82, D88, T64, LNX).</li>
- <li><i>{DriveType}</i> - Type of drive used for the image (1541, 1571, 1581, 4250, 8250, 8280).</li>
+ <li><i>{ImageType}</i> - Type of image (D64, D67, D71, D80, D81 D82, D88, D90, T64, LNX).</li>
+ <li><i>{DriveType}</i> - Type of drive used for the image (1541, 1571, 1581, 4250, 8250, 8280, 9000).</li>
  <li><i>{ExtArguments}</i> - Extra arguments which are configured on bookmarks. This can be used to customize a plugin for a certain bookmark.</li>
 </ul>
 
@@ -189,7 +192,7 @@ You can still use DroiD64 without database support, but without the possibility 
 Different databases use different drivers, connection URLs and syntax. These are the parameters which needs to be setup for DroiD64.</p>
 <dl>
   <dt><b>JDBC driver class</b></dt>
-  <dd>This is the driver implementation java class which is provided by the database vendor. Without this, DroiD64 will not know which driver to use. This is normally provided by a jar file which must be in the java class path for DroiD64.</dd>
+  <dd>This is the driver implementation java class which is provided by the database vendor. Without this, DroiD64 will not know which driver to use. This is normally provided by a jar file which must be in the java class path for DroiD64. The browse button at the right can be used to select one of the available JDBC drivers in the current class path.</dd>
   <dt><b>Connection URL</b></dt>
   <dd>The JDBC URL used to specify the location of your database. Typically it includes one or more of hostname, port number, file name.</dd>
   <dt><b>User</b></dt>
@@ -216,7 +219,7 @@ If you manage to use DroiD64 with some other database, please mail me the detail
 </dl>
 
 <h3>5.2.  MySQL </h3>
-  <table style="border-spacing:0px;padding=0px;border-collapse:separate;">
+  <table style="border-spacing:0px;padding:0px;border-collapse:separate;">
     <tr><th>JDBC driver class:</th><td>com.mysql.cj.jdbc.Driver</td>
     <tr><th>Connection URL:</th><td>jdbc:mysql://localhost:3306/droid64</td>
     <tr><th>User:</th><td>droid64</td>
@@ -227,7 +230,7 @@ If you manage to use DroiD64 with some other database, please mail me the detail
   and add its jar file to the java class path.</p>
 
 <h3>5.3. PostgreSQL </h3>
-  <table>
+  <table style="border-spacing:0px;padding:0px;border-collapse:separate;">
     <tr><th>JDBC driver class:</th><td>org.postgresql.Driver</td>
     <tr><th>Connection URL:</th><td>jdbc:postgresql://localhost:5432/droid64</td>
     <tr><th>User:</th><td>droid64</td>
@@ -236,7 +239,7 @@ If you manage to use DroiD64 with some other database, please mail me the detail
   </table>
 
 <h3>5.4. H2 </h3>
-  <table>
+  <table style="border-spacing:0px;padding:0px;border-collapse:separate;">
     <tr><th>JDBC driver class:</th><td>org.h2.Driver</td>
     <tr><th>Connection URL:</th><td>jdbc:h2:file:~/.droid64.h2;INIT=RUNSCRIPT FROM '~/.droid64.sql'</td>
     <tr><th>User:</th><td>droid64</td>
@@ -249,7 +252,7 @@ If you manage to use DroiD64 with some other database, please mail me the detail
   The connection URL contains the path to the database file and the SQL script to initiate the database.</p>
 
 <h3>5.5. Firebird SQL</h3>
-  <table>
+  <table style="border-spacing:0px;padding:0px;border-collapse:separate;">
     <tr><th>JDBC driver class:</th><td>org.firebirdsql.jdbc.FBDriver</td>
     <tr><th>Connection URL:</th><td>jdbc:firebirdsql://localhost:3050//var/lib/firebird/data/droid64?encoding=ISO8859_1</td>
     <tr><th>User:</th><td>droid64</td>

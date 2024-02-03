@@ -39,7 +39,7 @@ public class EntryTableModelTest {
 		Assert.assertNotNull("getValueAt",model.getValueAt(0, 4));
 		model.setMode(-1);
 		model.getTableColumnModel();
-		Assert.assertNotNull("getMode" ,model.getMode());
+		Assert.assertTrue("getMode" ,model.getMode() != 0);
 		model.clear();;
 		Assert.assertNull("getDirEntry", model.getDirEntry(0));
 	}

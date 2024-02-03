@@ -110,7 +110,7 @@ public class DiskPanelTest {
 		mainPanel = new MainPanel(frame);
 		mainPanel.setButtonState();
 		mainPanel.setPluginButtonLabel(1, "ONE");
-		Assert.assertTrue("", MainPanel.getLookAndFeelNames().length > 0);
+		Assert.assertFalse("", GuiHelper.getLookAndFeels().isEmpty());
 		DiskPanel diskPanel = mainPanel.getLeftDiskPanel();
 		diskPanel.setVisible(false);
 		return diskPanel;

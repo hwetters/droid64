@@ -99,17 +99,15 @@ public class SearchResultRow implements Serializable {
 
 	@Override
 	public String toString() {
-		var builder = new StringBuilder();
-		builder.append("SearchResultRow[");
-		builder.append(" .path=").append(path);
-		builder.append(" .disk=").append(disk);
-		builder.append(" .label=").append(label);
-		builder.append(" .file=").append(file);
-		builder.append(" .type=").append(type);
-		builder.append(" .size=").append(size);
-		builder.append(" .hostName=").append(hostName);
-		builder.append(']');
-		return builder.toString();
+		return new StringBuilder()
+		.append("SearchResultRow[")
+		.append(" .path=").append(path)
+		.append(" .disk=").append(disk)
+		.append(" .label=").append(label)
+		.append(" .file=").append(file)
+		.append(" .type=").append(type)
+		.append(" .size=").append(size)
+		.append(" .hostName=").append(hostName)
+		.append(']').toString();
 	}
-
 }

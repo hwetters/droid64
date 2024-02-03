@@ -100,7 +100,6 @@ public class Resources {
 	public static final String DROID64_SETTINGS_TAB_FILES = "droid64.settings.tab.files";
 	public static final String DROID64_SETTINGS_TAB_COLORS = "droid64.settings.tab.colors";
 	public static final String DROID64_SETTINGS_TAB_DATABASE = "droid64.settings.tab.database";
-	public static final String DROID64_SETTINGS_TAB_NET = "droid64.settings.tab.net";
 	public static final String DROID64_SETTINGS_TAB_PLUGIN = "droid64.settings.tab.plugin";
 	public static final String DROID64_SETTINGS_OK = "droid64.settings.ok";
 	public static final String DROID64_SETTINGS_OK_TOOLTIP = "droid64.settings.ok.tooltip";
@@ -167,7 +166,6 @@ public class Resources {
 	public static final String DROID64_SETTINGS_COLOR_CBM = "droid64.settings.color.cbm";
 	public static final String DROID64_SETTINGS_COLOR_CPM = "droid64.settings.color.cpm";
 	public static final String DROID64_SETTINGS_COLOR_LOCAL = "droid64.settings.color.local";
-
 	// Search dialog
 	public static final String DROID64_SEARCH_SEARCH = "droid64.search.search";
 	public static final String DROID64_SEARCH_CLOSE = "droid64.search.close";

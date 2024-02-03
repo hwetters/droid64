@@ -52,13 +52,15 @@ public class D88 extends DiskImage {
 	/** 1 byte for free sectors on track, and one bit per sector (5 bytes / 40 bits) for each head */
 	private static final int BYTES_PER_BAM_GROUP = 5;
 
-	public D88(ConsoleStream consoleStream) {
+	public D88(DiskImageType imageFormat, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		bam = new CbmBam(TRACK_COUNT, BYTES_PER_BAM_GROUP * HEAD_COUNT - 1);
 		initCbmFile(FILE_NUMBER_LIMIT);
 	}
 
-	public D88(byte[] imageData, ConsoleStream consoleStream) {
+	public D88(DiskImageType imageFormat, byte[] imageData, ConsoleStream consoleStream) {
+		this.imageFormat  = imageFormat;
 		this.feedbackStream = consoleStream;
 		cbmDisk = imageData;
 		bam = new CbmBam(TRACK_COUNT, BYTES_PER_BAM_GROUP * HEAD_COUNT - 1);
@@ -189,17 +191,17 @@ public class D88 extends DiskImage {
 	public byte[] getFileData(int number) throws CbmException {
 		if (cbmDisk == null) {
 			throw new CbmException("getFileData: No disk data exist.");
-		} else if (number >= cbmFile.length) {
+		} else if (number >= getCbmFileSize()) {
 			throw new CbmException("getFileData: File number " + number + " does not exist.");
 		} else if (isCpmImage()) {
 			feedbackStream.append("getFileData: CP/M mode.\n");
 			throw new CbmException("Not yet implemented for CP/M format.");
-		} else if (cbmFile[number].isFileScratched()) {
+		} else if (getCbmFile(number).isFileScratched()) {
 			throw new CbmException("getFileData: File number " + number + " is deleted.");
 		}
-		feedbackStream.append("getFileData: ").append(number).append(" '").append(cbmFile[number].getName()).append("'\n");
+		feedbackStream.append("getFileData: ").append(number).append(" '").append(getCbmFile(number).getName()).append("'\n");
 		feedbackStream.append("Tracks / Sectors: ");
-		return getData(cbmFile[number].getTrack(), cbmFile[number].getSector());
+		return getData(getCbmFile(number).getTrack(), getCbmFile(number).getSector());
 	}
 
 	@Override

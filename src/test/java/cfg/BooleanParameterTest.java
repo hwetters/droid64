@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import droid64.cfg.BooleanParameter;
-import droid64.cfg.StringParameter;
 
 public class BooleanParameterTest {
 
@@ -33,7 +32,6 @@ public class BooleanParameterTest {
 		Assert.assertTrue("", par.equals(par));
 		Assert.assertTrue("", par.equals(new BooleanParameter("UnitTest.Boolean")));
 		Assert.assertFalse("", par.equals(new BooleanParameter("UnitTest.Boolean2")));
-		Assert.assertTrue("", par.equals(new StringParameter("UnitTest.Boolean")));
 		Assert.assertEquals("", 0, par.compareTo(new BooleanParameter("UnitTest.Boolean")));
 		par.getType();
 	}

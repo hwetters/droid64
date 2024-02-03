@@ -6,7 +6,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.File;
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -23,7 +23,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
-import javax.swing.text.NumberFormatter;
 
 import droid64.d64.DiskImageType;
 import droid64.d64.FileType;
@@ -84,25 +83,10 @@ public class SearchPanel extends JPanel {
 	}
 
 	public static JFormattedTextField getNumericField(int initValue, int columns) {
-		var longFormat = NumberFormat.getIntegerInstance();
-		var numberFormatter = new NumberFormatter(longFormat) {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Long stringToValue(String text) {
-				if (text == null || text.isEmpty()) {
-					return null;
-				}
-				try {
-					return Long.parseLong(text);
-				} catch (NumberFormatException e) {
-					return null;
-				}
-			}
-		};
-		numberFormatter.setValueClass(Long.class); //optional, ensures you will always get a long value
-		numberFormatter.setAllowsInvalid(false); //this is the key!!
-		numberFormatter.setMinimum(0l); //Optional
-		var field = new JFormattedTextField(numberFormatter);
+		var dec = new DecimalFormat();
+		dec.setGroupingUsed(false);
+		dec.setMaximumIntegerDigits(columns);
+		var field = new JFormattedTextField(dec);
 		field.setText(Integer.toString(initValue));
 		field.setColumns(columns);
 		return field;
@@ -234,7 +218,10 @@ public class SearchPanel extends JPanel {
 	private void runSearch(DiskSearchCriteria criteria) {
 		try {
 			tableModel.clear();
-			DaoFactory.getDaoFactory().getDiskDao().search(criteria).map(disk -> new SearchResultRow(disk, disk.getDiskFiles().get(0))).forEach(tableModel::updateDirEntry);
+			DaoFactory.getDaoFactory().getDiskDao()
+				.search(criteria)
+				.map(disk -> new SearchResultRow(disk, disk.getDiskFiles().get(0)))
+				.forEach(tableModel::updateDirEntry);
 		} catch (DatabaseException e) {	//NOSONAR
 			if (mainPanel != null) {
 				mainPanel.appendConsole(e.getMessage());

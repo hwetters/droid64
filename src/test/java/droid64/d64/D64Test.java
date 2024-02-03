@@ -17,13 +17,13 @@ public class D64Test extends DiskImageBaseTest {
 	@Test
 	public void testToString() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new D64(consoleStream).toString().isEmpty());
+		Assert.assertFalse(new D64(DiskImageType.D64, consoleStream).toString().isEmpty());
 	}
 
 	@Test
 	public void test() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		Assert.assertFalse(new D64(consoleStream).isCpmImage());
+		Assert.assertFalse(new D64(DiskImageType.D64, consoleStream).isCpmImage());
 	}
 
 	@Override
@@ -31,8 +31,8 @@ public class D64Test extends DiskImageBaseTest {
 	public void testBlankNewImage() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
 		File imgFile = getTempFile(".d64");
-		D64 d64 = new D64(consoleStream);
-		new D64(d64.cbmDisk, consoleStream);
+		D64 d64 = new D64(DiskImageType.D64, consoleStream);
+		new D64(DiskImageType.D64, d64.cbmDisk, consoleStream);
 		Assert.assertTrue(d64.equals(d64));
 		Assert.assertTrue("Create D64 image ", d64.saveNewImage(imgFile, "D64 UNIT TEST", "00D64"));
 		d64.readDirectory();
@@ -52,7 +52,7 @@ public class D64Test extends DiskImageBaseTest {
 	@Test
 	public void testGetDisk() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 d64 = new D64(consoleStream);
+		D64 d64 = new D64(DiskImageType.D64, consoleStream);
 		File imgFile = getTempFile(".d64");
 		Assert.assertTrue("Create D64 image ", d64.saveNewImage(imgFile, "D64 UNIT TEST", "00D64"));
 		d64.addDirectoryEntry(new CbmFile(), 1, 1, false, 11);
@@ -66,7 +66,7 @@ public class D64Test extends DiskImageBaseTest {
 	public void testSwitchFileLocations() throws Exception {
 		File imgFile = getTempFile(".d64");
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 img = new D64(consoleStream);
+		D64 img = new D64(DiskImageType.D64, consoleStream);
 		Assert.assertTrue("Create D64 image ", img.saveNewImage(imgFile, "D64 UNIT TEST", "00D64"));
 		CbmFile cf1 = addFileToImage(img, "file1", new byte[10]);
 		CbmFile cf2 = addFileToImage(img, "file2", new byte[10]);
@@ -78,7 +78,7 @@ public class D64Test extends DiskImageBaseTest {
 	public void testImportExportNumFiles() throws Exception {
 		File imgFile = getTempFile(".d64");
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 img = new D64(consoleStream);
+		D64 img = new D64(DiskImageType.D64, consoleStream);
 		Assert.assertTrue("Create D64 image ", img.saveNewImage(imgFile, "D64 UNIT TEST", "00D64"));
 		importExportNumfiles(img, imgFile, D64.FILE_NUMBER_LIMIT, 664);
 	}
@@ -88,7 +88,7 @@ public class D64Test extends DiskImageBaseTest {
 	public void testImportExportSizes() throws Exception {
 		File imgFile = getTempFile(".d64");
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 img = new D64(consoleStream);
+		D64 img = new D64(DiskImageType.D64, consoleStream);
 		Assert.assertTrue("Create D64 image ", img.saveNewImage(imgFile, "D64 UNIT TEST", "00D64"));
 		for (int i = 0; i < TEST_FILE_SIZE_MAX; i++) {
 			importExportFile(img, 1, i, true);
@@ -98,19 +98,19 @@ public class D64Test extends DiskImageBaseTest {
 	@Test(expected=CbmException.class)
 	public void testGetFileData_BadFileNumFail() throws CbmException {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		new D64(consoleStream).getFileData(Integer.MAX_VALUE);
+		new D64(DiskImageType.D64, consoleStream).getFileData(Integer.MAX_VALUE);
 	}
 
 	@Test(expected=CbmException.class)
 	public void testReadPartition_Fail() throws CbmException {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		new D64(consoleStream).readPartition(1, 1, 2);
+		new D64(DiskImageType.D64, consoleStream).readPartition(1, 1, 2);
 	}
 
 	@Test
 	public void testGetSectorFromOffset() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 d64 = new D64(consoleStream);
+		D64 d64 = new D64(DiskImageType.D64, consoleStream);
 		int t=-1;
 		StringBuilder buf = new StringBuilder();
 		for (int b = 0; b<683; b++) {
@@ -130,7 +130,7 @@ public class D64Test extends DiskImageBaseTest {
 	@Test
 	public void testTorture() throws Exception {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 img = new D64(consoleStream);
+		D64 img = new D64(DiskImageType.D64, consoleStream);
 
 		Random fileRandom = new Random(img.getClass().getName().hashCode());
 
@@ -160,7 +160,7 @@ public class D64Test extends DiskImageBaseTest {
 	@Test
 	public void testTrackOffsetTable() {
 		var consoleStream = new ConsoleStream(new JTextArea());
-		D64 img = new D64(consoleStream);
+		D64 img = new D64(DiskImageType.D64, consoleStream);
 		int secIn = 0;
 		int offset = 0;
 		for (int trk = img.getFirstTrack(); trk < img.getTrackCount()+img.getFirstTrack(); trk++) {

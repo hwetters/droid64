@@ -7,32 +7,28 @@
         <path>/home/henke</path>
         <created>2020-07-10T08:31:53.476+02:00</created>
         <bookmarkType>FOLDER</bookmarkType>
-        <childs>
-            <Bookmark>
+        <Bookmark>
                 <name>Test10</name>
                 <path></path>
                 <created>2020-07-20T15:59:50.120+02:00</created>
                 <bookmarkType>FOLDER</bookmarkType>
-                <childs/>
                 <selectedNo>-1</selectedNo>
                 <pluginNo>-1</pluginNo>
-            </Bookmark>
-            <Bookmark>
+        </Bookmark>
+        <Bookmark>
                 <name>Test11</name>
                 <path></path>
                 <created>2020-07-20T16:00:11.744+02:00</created>
                 <bookmarkType>FOLDER</bookmarkType>
-                <childs/>
                 <selectedNo>-1</selectedNo>
                 <pluginNo>-1</pluginNo>
-            </Bookmark>
-            <Bookmark>
+        </Bookmark>
+        <Bookmark>
                 <name>Test12</name>
                 <path>/home/henke</path>
                 <created>2020-07-10T08:31:53.477+02:00</created>
                 <bookmarkType>FOLDER</bookmarkType>
-                <childs>
-                    <Bookmark>
+                <Bookmark>
                         <name>$HOME</name>
                         <path>/home/henke</path>
                         <created>2020-07-10T08:31:53.477+02:00</created>
@@ -45,11 +41,9 @@
                         <path></path>
                         <created>2020-07-20T15:50:20.214+02:00</created>
                         <bookmarkType>FOLDER</bookmarkType>
-                        <childs/>
                         <selectedNo>-1</selectedNo>
                         <pluginNo>-1</pluginNo>
                     </Bookmark>
-                </childs>
                 <selectedNo>0</selectedNo>
                 <pluginNo>-1</pluginNo>
             </Bookmark>
@@ -61,7 +55,6 @@
                 <selectedNo>0</selectedNo>
                 <pluginNo>-1</pluginNo>
             </Bookmark>
-        </childs>
         <selectedNo>-1</selectedNo>
         <pluginNo>-1</pluginNo>
     </Bookmark>
@@ -70,7 +63,6 @@
         <path>/ds/5.prg/c64/demo</path>
         <created>2020-07-10T22:50:59.404+02:00</created>
         <bookmarkType>FOLDER</bookmarkType>
-        <childs>
             <Bookmark>
                 <name>Demo dir</name>
                 <path>/ds/5.prg/c64/demo</path>
@@ -124,7 +116,6 @@
                 <path></path>
                 <created>2020-07-18T22:55:59.705+02:00</created>
                 <bookmarkType>FOLDER</bookmarkType>
-                <childs>
                     <Bookmark>
                         <name>Tubular bells</name>
                         <path>/warez/smb/c64/demo/Tubularbells.d64</path>
@@ -133,11 +124,9 @@
                         <selectedNo>0</selectedNo>
                         <pluginNo>1</pluginNo>
                     </Bookmark>
-                </childs>
                 <selectedNo>-1</selectedNo>
                 <pluginNo>-1</pluginNo>
             </Bookmark>
-        </childs>
         <selectedNo>0</selectedNo>
         <pluginNo>-1</pluginNo>
     </Bookmark>
@@ -146,7 +135,6 @@
         <path>/ds/5.prg/c64/games</path>
         <created>2020-07-10T22:50:59.404+02:00</created>
         <bookmarkType>FOLDER</bookmarkType>
-        <childs>
             <Bookmark>
                 <name>1942</name>
                 <path>/home/henke/1942.D64</path>
@@ -171,7 +159,6 @@
                 <selectedNo>0</selectedNo>
                 <pluginNo>1</pluginNo>
             </Bookmark>
-        </childs>
         <selectedNo>0</selectedNo>
         <pluginNo>-1</pluginNo>
     </Bookmark>
@@ -196,7 +183,6 @@
         <path></path>
         <created>2020-07-13T12:41:50.952+02:00</created>
         <bookmarkType>FOLDER</bookmarkType>
-        <childs>
             <Bookmark>
                 <name>juggler</name>
                 <path>/warez/smb/c64/cpm/juggler.d64.gz</path>
@@ -205,7 +191,6 @@
                 <selectedNo>-1</selectedNo>
                 <pluginNo>-1</pluginNo>
             </Bookmark>
-        </childs>
         <selectedNo>-1</selectedNo>
         <pluginNo>-1</pluginNo>
     </Bookmark>

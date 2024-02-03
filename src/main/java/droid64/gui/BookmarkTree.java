@@ -2,15 +2,11 @@ package droid64.gui;
 
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,25 +26,20 @@ import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import javax.swing.plaf.metal.MetalIconFactory;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
 import droid64.DroiD64;
+import droid64.cfg.Bookmark;
+import droid64.cfg.BookmarkHandler;
+import droid64.cfg.BookmarkList;
+import droid64.cfg.BookmarkType;
 import droid64.d64.DirEntry;
 import droid64.d64.Utility;
-import droid64.db.Bookmark;
-import droid64.db.Bookmark.BookmarkType;
-import droid64.db.BookmarkList;
 
 /**
  * BookmarkTree class
@@ -56,8 +47,7 @@ import droid64.db.BookmarkList;
 public final class BookmarkTree extends JTree {
 
 	private static final long serialVersionUID = 1L;
-	private static final Class<BookmarkList> CLAZZ = BookmarkList.class;
-
+	public static final String DOC_TYPE = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
 	private static final Icon DISKIMAGE_ICON = MetalIconFactory.getTreeFloppyDriveIcon();
 	private static final Icon DIRECTORY_ICON = MetalIconFactory.getTreeFolderIcon();
 
@@ -71,7 +61,8 @@ public final class BookmarkTree extends JTree {
 
 	/**
 	 * Constructor
-	 * @param parent the main panel
+	 *
+	 * @param parent        the main panel
 	 * @param consoleStream the stream for errors
 	 */
 	public BookmarkTree(MainPanel parent, ConsoleStream consoleStream) {
@@ -79,23 +70,20 @@ public final class BookmarkTree extends JTree {
 		this.consoleStream = consoleStream;
 		setup();
 	}
-
+	
 	/**
 	 * @param file the file to read BookmarkList XML from
 	 */
 	public void load(File file) {
 		this.file = file;
 		menuItems.clear();
-		if (!file.exists()) {
-			mainPanel.appendConsole("No bookmark file exists.");
-			bookmarkList = new BookmarkList();
-			var root = new DefaultMutableTreeNode(bookmarkList);
-			model = new DefaultTreeModel(root);
-			setModel(model);
-			return;
-		}
 		try {
-			bookmarkList = JAXB.unmarshal(file, CLAZZ);
+			if (!file.exists()) {
+				mainPanel.appendConsole("No bookmark file exists.");
+				bookmarkList = new BookmarkList();
+			} else {
+				bookmarkList = new BookmarkHandler().readXML(file);
+			}
 			var root = new DefaultMutableTreeNode(bookmarkList);
 			loadTree(root, null, bookmarkList.getBookmarks());
 			model = new DefaultTreeModel(root);
@@ -114,7 +102,8 @@ public final class BookmarkTree extends JTree {
 	 */
 	public void showTree() {
 		addHierarchyListener(e -> GuiHelper.hierarchyListenerResizer(SwingUtilities.getWindowAncestor(this)));
-		JOptionPane.showMessageDialog(mainPanel.getParent(), new JScrollPane(this),	DroiD64.PROGNAME + " - Manage Bookmarks", JOptionPane.PLAIN_MESSAGE);
+		JOptionPane.showMessageDialog(mainPanel.getParent(), new JScrollPane(this),
+				DroiD64.PROGNAME + " - Manage Bookmarks", JOptionPane.PLAIN_MESSAGE);
 		save();
 	}
 
@@ -247,7 +236,8 @@ public final class BookmarkTree extends JTree {
 		}
 
 		popup.add(new JMenuItem("New Folder...")).addActionListener(e -> {
-			var name = GuiHelper.getStringDialog(BookmarkTree.this, "New bookmark folder", "Enter the name of the new folder", null);
+			var name = GuiHelper.getStringDialog(BookmarkTree.this, "New bookmark folder",
+					"Enter the name of the new folder", null);
 			if (!Utility.isEmpty(name)) {
 				addEntry(createBookmark(BookmarkType.FOLDER, name), selectedNode);
 			}
@@ -277,25 +267,17 @@ public final class BookmarkTree extends JTree {
 	 */
 	private void show(Object o) {
 		if (o instanceof Bookmark) {
-			new BookmarkPanel(mainPanel.getParent(), (Bookmark) o, consoleStream).showDialog();
+			var bookmark = (Bookmark) o;
+			new BookmarkPanel(mainPanel.getParent(), bookmark, consoleStream).showDialog();
 		}
 	}
 
 	private void save(BookmarkList bl, File file) {
-		try {
-			var jaxbContext = JAXBContext.newInstance(BookmarkList.class);
-			var marshaller = jaxbContext.createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
-			bl.setTimestamp(new Date());
-
-			if (file.exists()) {
-				Files.move(file.toPath(), new File(file.getAbsolutePath() + ".bak").toPath(),
-						StandardCopyOption.REPLACE_EXISTING);
-			}
-			marshaller.marshal(bl, file);
-		} catch (JAXBException | IOException ex) {
-			JOptionPane.showMessageDialog(this, "Can't write file\n" + ex, "Error", JOptionPane.ERROR_MESSAGE);
+		try (var writer = new FileWriter(file)) {
+			writer.write(DOC_TYPE + '\n');
+			writer.write(bl.toXML());
+		} catch (IOException ex) {
+			JOptionPane.showMessageDialog(null, "Can't write file " + file + '\n' + ex, "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -352,7 +334,8 @@ public final class BookmarkTree extends JTree {
 				dp.doubleClickedLocalfile(pf, 0);
 
 				if (dp.isZipFileLoaded()) {
-					Integer n = dp.getDirEntries().filter(d -> f.getName().equals(d.getName())).findFirst().map(DirEntry::getNumber).orElse(null);
+					Integer n = dp.getDirEntries().filter(d -> f.getName().equals(d.getName())).findFirst()
+							.map(DirEntry::getNumber).orElse(null);
 					if (n != null) {
 						dp.doubleClickedRow(n.intValue() - 1);
 					}
@@ -411,217 +394,6 @@ public final class BookmarkTree extends JTree {
 			case ROOT:
 				break;
 			}
-		}
-	}
-}
-
-/**
- * TreeTransferHandler
- */
-class TreeTransferHandler extends TransferHandler {
-
-	private static final long serialVersionUID = 1L;
-	private static final String MIME_TYPE = DataFlavor.javaJVMLocalObjectMimeType + ";class=\""	+ DefaultMutableTreeNode[].class.getName() + "\"";
-	private DataFlavor nodesFlavor;
-	private DataFlavor[] flavors = new DataFlavor[1];
-	private DefaultMutableTreeNode[] nodesToRemove;
-	private final MainPanel mainPanel;
-
-	public TreeTransferHandler(MainPanel mainPanel) {
-		this.mainPanel = mainPanel;
-		try {
-			nodesFlavor = new DataFlavor(MIME_TYPE);
-			flavors[0] = nodesFlavor;
-		} catch (ClassNotFoundException e) {
-			GuiHelper.showErrorMessage(mainPanel.getParent(), "Drop failed", "ClassNotFound: " + e.getMessage());
-		}
-	}
-
-	@Override
-	public boolean canImport(TransferHandler.TransferSupport support) {
-		if (!support.isDrop()) {
-			return false;
-		}
-		support.setShowDropLocation(true);
-		if (!support.isDataFlavorSupported(nodesFlavor)) {
-			return false;
-		}
-		// Do not allow a drop on the drag source selections.
-		var dl = (JTree.DropLocation) support.getDropLocation();
-		var tree = (JTree) support.getComponent();
-		int dropRow = tree.getRowForPath(dl.getPath());
-		var selRows = tree.getSelectionRows();
-
-		for (int r : selRows) {
-			if (r == dropRow) {
-				return false;
-			}
-		}
-
-		var target = (DefaultMutableTreeNode) dl.getPath().getLastPathComponent();
-
-		var obj = target.getUserObject();
-		if (!(obj instanceof BookmarkList)
-				&& !Utility.isOneOf(((Bookmark) obj).getBookmarkType(), BookmarkType.ROOT, BookmarkType.FOLDER)) {
-			// Can only drop to root or folder
-			return false;
-		}
-
-		// Do not allow MOVE-action drops if a non-leaf node is
-		// selected unless all of its children are also selected.
-		if (support.getDropAction() == MOVE) {
-			return haveCompleteNode(tree);
-		}
-		// Do not allow a non-leaf node to be copied to a level
-		// which is less than its source level.
-		var path = tree.getPathForRow(selRows[0]);
-		var firstNode = (DefaultMutableTreeNode) path.getLastPathComponent();
-
-		return firstNode.getChildCount() == 0 || target.getLevel() >= firstNode.getLevel();
-	}
-
-	private boolean haveCompleteNode(JTree tree) {
-		var selRows = tree.getSelectionRows();
-		var path = tree.getPathForRow(selRows[0]);
-		var first = (DefaultMutableTreeNode) path.getLastPathComponent();
-		var childCount = first.getChildCount();
-		// first has children and no children are selected.
-		if (childCount > 0 && selRows.length == 1) {
-			return false;
-		}
-		// first may have children.
-		for (int i = 1; i < selRows.length; i++) {
-			path = tree.getPathForRow(selRows[i]);
-			var next = (DefaultMutableTreeNode) path.getLastPathComponent();
-			if (first.isNodeChild(next) && childCount > selRows.length - 1) {
-				// Found a child of first.
-				// Not all children of first are selected.
-				return false;
-			}
-		}
-		return true;
-	}
-
-	@Override
-	protected Transferable createTransferable(JComponent tree) {
-		var paths = ((JTree) tree).getSelectionPaths();
-		if (paths != null) {
-			// Make up a node array of copies for transfer and
-			// another for/of the nodes that will be removed in
-			// exportDone after a successful drop.
-			List<DefaultMutableTreeNode> copies = new ArrayList<>();
-			List<DefaultMutableTreeNode> toRemove = new ArrayList<>();
-			var node = (DefaultMutableTreeNode) paths[0].getLastPathComponent();
-			var copy = copy(node);
-			copies.add(copy);
-			toRemove.add(node);
-
-			for (int i = 1; i < paths.length; i++) {
-				var next = (DefaultMutableTreeNode) paths[i].getLastPathComponent();
-				// Do not allow higher level nodes to be added to list.
-				if (next.getLevel() < node.getLevel()) {
-					break;
-				} else if (next.getLevel() > node.getLevel()) {
-					// child node
-					copy.add(copy(next));
-					// node already contains child
-				} else {
-					// sibling
-					copies.add(copy(next));
-					toRemove.add(next);
-				}
-			}
-			var nodes = copies.toArray(new DefaultMutableTreeNode[copies.size()]);
-			nodesToRemove = toRemove.toArray(new DefaultMutableTreeNode[toRemove.size()]);
-			return new NodesTransferable(nodes);
-		}
-		return null;
-	}
-
-	/** Defensive copy used in createTransferable. */
-	private DefaultMutableTreeNode copy(TreeNode node) {
-		return (DefaultMutableTreeNode) ((DefaultMutableTreeNode) node).clone();
-	}
-
-	@Override
-	protected void exportDone(JComponent source, Transferable data, int action) {
-		if ((action & MOVE) == MOVE) {
-			var tree = (JTree) source;
-			var model = (DefaultTreeModel) tree.getModel();
-			// Remove nodes saved in nodesToRemove in createTransferable.
-			for (var n : nodesToRemove) {
-				model.removeNodeFromParent(n);
-			}
-		}
-	}
-
-	@Override
-	public int getSourceActions(JComponent c) {
-		return COPY_OR_MOVE;
-	}
-
-	@Override
-	public boolean importData(TransferHandler.TransferSupport support) {
-		if (!canImport(support)) {
-			return false;
-		}
-		// Extract transfer data.
-		DefaultMutableTreeNode[] nodes = null;
-		try {
-			nodes = (DefaultMutableTreeNode[]) support.getTransferable().getTransferData(nodesFlavor);
-		} catch (UnsupportedFlavorException | IOException ex) {
-			GuiHelper.showErrorMessage(mainPanel.getParent(), "Drop failed", ex.getMessage());
-			return false;
-		}
-		// Get drop location info.
-		var dl = (JTree.DropLocation) support.getDropLocation();
-		int childIndex = dl.getChildIndex();
-		var parent = (DefaultMutableTreeNode) dl.getPath().getLastPathComponent();
-		var tree = (JTree) support.getComponent();
-		// Configure for drop mode.
-		int index = childIndex; // DropMode.INSERT
-		if (childIndex == -1) { // DropMode.ON
-			index = parent.getChildCount();
-		}
-		// Add data to model.
-		var model = (DefaultTreeModel) tree.getModel();
-		for (var i = 0; i < nodes.length; i++) {
-			model.insertNodeInto(nodes[i], parent, index++);
-		}
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getName();
-	}
-
-	/**
-	 * NodesTransferable
-	 */
-	public class NodesTransferable implements Transferable {
-		private final DefaultMutableTreeNode[] nodes;
-
-		public NodesTransferable(DefaultMutableTreeNode[] nodes) {
-			this.nodes = nodes;
-		}
-
-		@Override
-		public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-			if (!isDataFlavorSupported(flavor)) {
-				throw new UnsupportedFlavorException(flavor);
-			}
-			return nodes;
-		}
-
-		@Override
-		public DataFlavor[] getTransferDataFlavors() {
-			return flavors;
-		}
-
-		@Override
-		public boolean isDataFlavorSupported(DataFlavor flavor) {
-			return nodesFlavor.equals(flavor);
 		}
 	}
 }

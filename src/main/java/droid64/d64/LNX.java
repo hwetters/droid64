@@ -91,7 +91,7 @@ public class LNX extends DiskImage {
 				pos = end + 1;
 				end = findNextMark(pos);
 				int fileCount = getInt(pos, end);
-				cbmFile = new CbmFile[fileCount];
+				initCbmFile(fileCount);
 				filesUsedCount = fileCount;
 				// Get file entries
 				int dataPos = dataStart;
@@ -137,13 +137,13 @@ public class LNX extends DiskImage {
 		cf.setFileLocked(false);
 		cf.setFileClosed(true);
 		cf.setLsu(lsu);
-		cbmFile[num] = cf;
+		setCbmFile(num, cf);
 	}
 
 	@Override
 	public byte[] getFileData(int number) throws CbmException {
-		if (cbmFile != null && number < cbmFile.length) {
-			CbmFile cf = cbmFile[number];
+		if (number < getCbmFileSize()) {
+			var cf = getCbmFile(number);
 			return Arrays.copyOfRange(cbmDisk, cf.getOffSet(), cf.getOffSet() + cf.getSizeInBytes());
 		} else {
 			throw new CbmException("LNX file number "+number+" does not exist.");

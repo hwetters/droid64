@@ -26,7 +26,7 @@ public class SettingTest {
         final String orgConfig = new String (Files.readAllBytes(CONF_FILE.toPath()));
 		Setting.resetAll();
 		Setting.load(new File("src/test/resources/droid64/gui/test.config"));
-		Assert.assertEquals("Setting count", 55, Setting.values().length);
+		Assert.assertEquals("Setting count", 57, Setting.values().length);
         StringWriter out = new StringWriter();
         Setting.save(new PrintWriter(out), TIMESTAMP);
         out.flush();

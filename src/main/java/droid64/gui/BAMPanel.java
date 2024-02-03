@@ -20,6 +20,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -111,7 +112,7 @@ public class BAMPanel extends JPanel {
 		viewModeButton.setSelected(true);
 
 		bamTable.setGridColor(new Color(230, 230, 255));
-		bamTable.setDefaultRenderer(Object.class, new ColoredTableCellRenderer());
+		bamTable.setDefaultRenderer(Object.class, new ColoredTableCellRenderer(this));
 		bamTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		bamTable.setColumnSelectionAllowed(true);
 		bamTable.setRowSelectionAllowed(true);
@@ -141,9 +142,12 @@ public class BAMPanel extends JPanel {
 		buttonPanel.add(saveButton);
 		buttonPanel.add(closeButton);
 
+		var js = new JScrollPane(bamTable);
+		js.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
 		setLayout(new BorderLayout());
 		add(diskNameLabel, BorderLayout.NORTH);
-		add(new JScrollPane(bamTable), BorderLayout.CENTER);
+		add(js, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
 		addHierarchyListener(e -> GuiHelper.hierarchyListenerResizer(SwingUtilities.getWindowAncestor(this)));
 	}
@@ -191,7 +195,7 @@ public class BAMPanel extends JPanel {
 		GuiHelper.setPreferredSize(this, 2, 2);
 		closeButton.addActionListener(e -> dialog.dispose());
 
-		dialog.setTitle( DroiD64.PROGNAME + " - BAM of " + diskImage.getDiskImageType() + " disk image");
+		dialog.setTitle(DroiD64.PROGNAME + " - BAM of " + diskImage.getDiskImageType() + " disk image");
 		dialog.setContentPane(this);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.pack();
@@ -229,10 +233,10 @@ public class BAMPanel extends JPanel {
 
 	private void setUsed(int row, int col, boolean used) {
 		if (used) {
-			diskImage.markSectorUsed(row + 1, col - 1);
+			diskImage.markSectorUsed(row + diskImage.getFirstTrack(), col - 1);
 			tableModel.setValueAt(BamState.USED, row, col);
 		} else {
-			diskImage.markSectorFree(row + 1, col - 1);
+			diskImage.markSectorFree(row + diskImage.getFirstTrack(), col - 1);
 			tableModel.setValueAt(BamState.FREE, row, col);
 		}
 	}
@@ -251,6 +255,7 @@ public class BAMPanel extends JPanel {
 		this.dialog = dialog;
 	}
 
+	/** Table model */
 	private class BamTableModel extends AbstractTableModel {
 		private static final long serialVersionUID = 1L;
 
@@ -307,6 +312,7 @@ public class BAMPanel extends JPanel {
 		}
 	}
 
+	/** BAM status */
 	public enum BamState {
 		FREE("Free", "-", new Color(200,255,200)),
 		USED("Used", "x", new Color(255,200,200)),
@@ -331,6 +337,7 @@ public class BAMPanel extends JPanel {
 		}
 	}
 
+	/** BAM Track */
 	public static class BamTrack {
 		public final int track;
 		public final BamState[] bam;
@@ -342,10 +349,18 @@ public class BAMPanel extends JPanel {
 		}
 	}
 
-
+	/** Table cell renderer */
 	protected static class ColoredTableCellRenderer extends DefaultTableCellRenderer {
 
 		private static final long serialVersionUID = 1L;
+		private final BAMPanel bamPanel;
+
+		/** Constructor
+		 * @param bamPanel
+		 */
+		protected ColoredTableCellRenderer(BAMPanel bamPanel) {
+			this.bamPanel = bamPanel;
+		}
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -355,18 +370,29 @@ public class BAMPanel extends JPanel {
 			label.setFont(table.getFont());
 			label.setForeground(table.getForeground());
 			label.setBackground(table.getBackground());
+			if (row >= 0 && column > 0 && bamPanel.diskImage != null) {
+				int t = row + bamPanel.diskImage.getFirstTrack();
+				int s = column + ( bamPanel.diskImage.getFirstSector() - 1);
+				label.setToolTipText(""+t+":"+s);
+			}
 			if (column == 0) {
 				label.setHorizontalAlignment(SwingConstants.RIGHT);
-			} else if (value instanceof BamState) {
-				if (isSelected) {
-					label.setBackground(((BamState) value).color.darker());
-				} else {
-					label.setBackground(((BamState) value).color);
-				}
 			} else {
-				label.setBackground(BamState.INVALID.color);
+				setBackground(label, (BamState) value, isSelected);
 			}
 			return label;
+		}
+
+		private void setBackground(Component comp, BamState state, boolean isSelected) {
+			if (state != null) {
+				if (isSelected) {
+					comp.setBackground(state.color.darker());
+				} else {
+					comp.setBackground(state.color);
+				}
+			} else {
+				comp.setBackground(BamState.INVALID.color);
+			}
 		}
 	}
 }

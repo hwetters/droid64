@@ -15,6 +15,7 @@ import java.awt.event.KeyListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Predicate;
@@ -33,6 +34,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.NumberFormatter;
@@ -130,20 +132,19 @@ public class GuiHelper {
 	}
 
 	public static JMenuItem addMenuItem(JMenu menu, String propertyKey, Character mnemonic, ActionListener listener) {
-		JMenuItem menuItem;
-		if (mnemonic== null) {
-			menuItem = new JMenuItem(Utility.getMessage(propertyKey));
-		} else {
-			menuItem = new JMenuItem(Utility.getMessage(propertyKey), mnemonic);
-		}
-		menuItem.setActionCommand(propertyKey);
-		menuItem.addActionListener(listener);
+		var menuItem = createMenuItem(propertyKey, mnemonic, listener);
 		menu.add (menuItem);
 		return menuItem;
 	}
 
 	public static JMenuItem addMenuItem(JPopupMenu menu, String propertyKey, Character mnemonic, ActionListener listener) {
-		JMenuItem menuItem;
+		var menuItem = createMenuItem(propertyKey, mnemonic, listener);
+		menu.add (menuItem);
+		return menuItem;
+	}
+
+	private static JMenuItem createMenuItem(String propertyKey, Character mnemonic, ActionListener listener) {
+		final JMenuItem menuItem;
 		if (mnemonic== null) {
 			menuItem = new JMenuItem(Utility.getMessage(propertyKey));
 		} else {
@@ -151,13 +152,12 @@ public class GuiHelper {
 		}
 		menuItem.setActionCommand(propertyKey);
 		menuItem.addActionListener(listener);
-		menu.add (menuItem);
 		return menuItem;
 	}
 
 	public static void setDefaultFonts() {
-		Font plainFont = new Font("Verdana", Font.PLAIN, Setting.LOCAL_FONT_SIZE.getInteger());
-		Font boldFont = new Font("Verdana", Font.BOLD, Setting.LOCAL_FONT_SIZE.getInteger());
+		var plainFont = new Font("Verdana", Font.PLAIN, Setting.LOCAL_FONT_SIZE.getInteger());
+		var boldFont = new Font("Verdana", Font.BOLD, Setting.LOCAL_FONT_SIZE.getInteger());
 		UIManager.put("Button.font",            new FontUIResource(plainFont));
 		UIManager.put("CheckBox.font",          new FontUIResource(plainFont));
 		UIManager.put("ComboBox.font",          new FontUIResource(plainFont));
@@ -319,5 +319,12 @@ public class GuiHelper {
 			}
 		}
 		combo.setSelectedIndex(-1);
+	}
+
+	/**
+	 * @return List of look and feels
+	 */
+	public static List<LookAndFeelInfo> getLookAndFeels() {
+		return Arrays.asList(UIManager.getInstalledLookAndFeels());
 	}
 }

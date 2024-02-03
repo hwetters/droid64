@@ -527,7 +527,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 		prg.runProgram(imgParentFile, execArgs, mainPanel);
 	}
 
-	private List<String> getSelectedFiles() {
+	protected List<String> getSelectedFiles() {
 		var selectedFiles = new ArrayList<String>();
 		for (var row : table.getSelectedRows()) {
 			final String selectedFile;
@@ -762,6 +762,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 							// Copy file from local file system to disk image
 							var cbmFile = new CbmFile();
 							cbmFile.setName(Utility.cbmFileName(filename, DiskImage.DISK_NAME_LENGTH));
+							cbmFile.setNameAsBytes(cbmFile.getName().getBytes());
 							cbmFile.setFileType(CbmFile.getFileTypeFromFileExtension(filename));
 							success = otherDiskPanel.diskImage.saveFile(cbmFile, false, data);
 							if (!success) {
@@ -796,6 +797,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 								cbmFile.setName(Utility.cbmFileName(filename, DiskImage.DISK_NAME_LENGTH));
 								cbmFile.setNameAsBytes(cbmFile.getName().getBytes());
 								cbmFile.setFileType(CbmFile.getFileTypeFromFileExtension(filename));
+								cbmFile.setFsFile(sourceFile);
 								success = otherDiskPanel.diskImage.saveFile(cbmFile, false, data);
 								if (!success) {
 									logFileSaveFailedAbort(filename);
@@ -953,6 +955,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 			if (saveName != null) {
 				createNewDisk(result, new File(saveName));
 				reloadDiskImage(true);
+				mainPanel.setButtonState();
 			}
 		}
 	}
@@ -1013,7 +1016,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 		if (diskImage == null) {
 			return 0;
 		}
-		var errors = diskImage.validate(new ArrayList<ValidationError.Error>());
+		var errors = diskImage.validate(new ArrayList<>());
 		if (errors != null && errors > 0) {
 			Integer warnings = diskImage.getWarnings();
 			mainPanel.formatConsole("Validated disk and found %d errors and %d warnings.", errors, warnings);
@@ -1177,6 +1180,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 		var cbmFile = new CbmFile();
 		cbmFile.setName(result.getFileName());
 		cbmFile.setFileType(result.getFileType());
+		cbmFile.setNameAsBytes(cbmFile.getName().getBytes());
 		mainPanel.appendConsole("newFile: " + cbmFile.getName());
 		diskImage.addDirectoryEntry(cbmFile, 0, 0, false, 0);
 		diskImage.save();
@@ -1241,6 +1245,14 @@ public class DiskPanel extends JPanel implements TableModelListener {
 					imageLoaded = false;
 					repaint();
 				}
+			} else if (file.isDirectory()) {
+				loadLocalDirectory(file);
+			} else {
+				if (isVisible()) {
+					GuiHelper.showErrorMessage(mainPanel.getParent(),"Load error","Unknown file type. "+file);
+				} else {
+					mainPanel.appendConsole("Unknown file type. " + file + '\n');
+				}
 			}
 		} else {
 			loadLocalDirectory(currentImagePath);
@@ -1249,28 +1261,32 @@ public class DiskPanel extends JPanel implements TableModelListener {
 
 	public void reloadDiskImage(boolean updateList){
 		mainPanel.appendConsole("reloadDiskImage "+imageLoaded+'\n');
-		if (imageLoaded ){
-			try {
-				var currentPartition = diskImage.getCurrentPartition();
-				diskImage = DiskImage.getDiskImage(diskImage.getFile(), consoleStream);
-				setDiskName(diskImage.getFile().getPath());
-				clearDirTable();
-				updateImageFile();
-				if (currentPartition != null) {
-					diskImage.setCurrentPartition(currentPartition);
-					diskImage.readBAM();
-					diskImage.readDirectory();
+		if (imageLoaded){
+			if (diskImage != null) {
+				try {
+					var currentPartition = diskImage.getCurrentPartition();
+					diskImage = DiskImage.getDiskImage(diskImage.getFile(), consoleStream);
+					setDiskName(diskImage.getFile().getPath());
+					clearDirTable();
+					updateImageFile();
+					if (currentPartition != null) {
+						diskImage.setCurrentPartition(currentPartition);
+						diskImage.readBAM();
+						diskImage.readDirectory();
+					}
+					if (updateList) {
+						showDirectory();
+					}
+				} catch (Exception | OutOfMemoryError e) {	//NOSONAR
+					GuiHelper.showException(mainPanel.getParent(),"Load error", e, "Failed to load disk image.");
+					mainPanel.appendConsole("\nError: "+e.getMessage());
+					setDiskName(null);
+					diskLabel.setText(Utility.getMessage(Resources.DROID64_NODISK));
+					imageLoaded = false;
+					repaint();
 				}
-				if (updateList) {
-					showDirectory();
-				}
-			} catch (Exception | OutOfMemoryError e) {	//NOSONAR
-				GuiHelper.showException(mainPanel.getParent(),"Load error", e, "Failed to load disk image.");
-				mainPanel.appendConsole("\nError: "+e.getMessage());
-				setDiskName(null);
-				diskLabel.setText(Utility.getMessage(Resources.DROID64_NODISK));
-				imageLoaded = false;
-				repaint();
+			} else {
+				mainPanel.appendConsole("\nError: Loaded image is null");
 			}
 		} else {
 			loadLocalDirectory(currentImagePath);
@@ -1390,6 +1406,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 		GuiHelper.addMenuItem(menu, Resources.DROID64_MENU_DISK_PRINTDIR, 'p', listener);
 		GuiHelper.addMenuItem(menu, Resources.DROID64_MENU_DISK_MD5, '5', listener);
 		GuiHelper.addMenuItem(menu, Resources.DROID64_MENU_DISK_MIRROR, 'm', listener);
+
 		return menu;
 	}
 
@@ -1470,20 +1487,8 @@ public class DiskPanel extends JPanel implements TableModelListener {
 	}
 
 	public boolean isWritableImageLoaded() {
-		if (imageLoaded && !zipFileLoaded && !diskImage.isCpmImage()) {
-			switch (diskImage.getImageFormat()) {
-			case D64:
-			case D67:
-			case D71:
-			case D80:
-			case D81:
-			case D82:
-			case D88:
-			case T64:
-				return true;
-			default:
-				return false;
-			}
+		if (imageLoaded && !zipFileLoaded && diskImage != null && !diskImage.isCpmImage()) {
+			return !diskImage.getImageFormat().isReadonly();
 		} else {
 			return false;
 		}
@@ -1589,7 +1594,7 @@ public class DiskPanel extends JPanel implements TableModelListener {
 	}
 
 	public boolean supportsDirectories() {
-		return !imageLoaded || diskImage.supportsDirectories();
+		return !imageLoaded && !zipFileLoaded || (diskImage != null && diskImage.supportsDirectories());
 	}
 
 	public int getImageLength() {
