@@ -1,4 +1,4 @@
-# DroiD64 ${project.version}
+# DroiD66
 
 DroiD64 is a graphical file manager for D64, D67, D71, D80, D81, D82, D88, D90, T64 and LNX files.
 This is a file manager for disk-images suitable for the Commodore 64 and others.
